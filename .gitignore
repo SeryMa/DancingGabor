@@ -1,0 +1,15 @@
+# IDE settings
+/.idea
+
+# Virtual environment
+/venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+
+*.avi
+/suggestions
+/test.py

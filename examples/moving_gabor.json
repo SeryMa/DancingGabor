@@ -1,0 +1,34 @@
+{
+  "seed": 42,
+  "output": {
+    "live": true,
+    "width": 500,
+    "height": 500
+  },
+  "patched": {
+    "continuous": {
+      "period": 5,
+      "pink": {}
+    },
+    "patches": [
+      {
+        "gabor": {},
+        "x": {
+          "circ": {
+            "center": 250,
+            "distance": 10,
+            "period": 10
+          }
+        },
+        "y": {
+          "circ": {
+            "center": 250,
+            "distance": 10,
+            "period": 10,
+            "initial_time": 2
+          }
+        }
+      }
+    ]
+  }
+}
