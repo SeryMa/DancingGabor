@@ -87,5 +87,17 @@ def get_noise(width, height, **kwargs):
 
         return GaborGenerator(update_list=update_list, **specs)
 
+    elif 'plaid' in kwargs:
+        specs = kwargs['plaid']
+        update_list = []
+        if 'updates' in specs:
+            for patch in specs['updates']:
+                update_list.append((
+                    patch['value'],
+                    get_value_updater(**patch)
+                ))
+
+        return PlaidGenerator(update_list=update_list, **specs)
+
     else:
         raise ValueError(f"Any noise type wasn't recognized.")

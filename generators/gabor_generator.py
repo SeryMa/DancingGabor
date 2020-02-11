@@ -2,7 +2,6 @@ import numpy as np
 import numpy.fft as fft
 
 from generators.noise_generator import NoiseGenerator
-from utils.updater import Updater
 
 
 class GaborGenerator(NoiseGenerator):
@@ -25,14 +24,14 @@ class GaborGenerator(NoiseGenerator):
         self.phase = phase
 
         # TODO: try to think about a different approach to double initialized values
-        self.__update(0)
+        self.__update__(0)
 
-    def __update(self, dt):
+    def __update__(self, dt):
         for name, update_function in self.update_list:
             self.__dict__[name] = update_function(dt)
 
     def get_next_frame(self, dt=1):
-        self.__update(dt)
+        self.__update__(dt)
 
         sigmadeg = (np.sqrt(np.log(4)) / (2 * np.pi * 6)) * ((2 ** (self.bandwidth + 1)) / (2 ** (self.bandwidth - 1)))
         sigma = sigmadeg * self.__ppd__
@@ -56,3 +55,20 @@ class GaborGenerator(NoiseGenerator):
 
         gauss = np.clip(gauss, self.TRIM, gauss.max()) - self.TRIM
         return grating * gauss
+
+
+class PlaidGenerator(GaborGenerator):
+    def __init__(self, **kwargs):
+        self.second_generator = GaborGenerator(**kwargs)
+
+        super(PlaidGenerator, self).__init__(**kwargs)
+
+    def __update__(self, dt):
+        super(PlaidGenerator, self).__update__(dt)
+        self.theta = self.second_generator.theta + 90
+
+    def get_next_frame(self, dt=1):
+        gabor_a = self.second_generator.get_next_frame(dt)
+        gabor_b = super(PlaidGenerator, self).get_next_frame(dt)
+
+        return gabor_b + gabor_a

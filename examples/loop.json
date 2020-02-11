@@ -1,0 +1,39 @@
+{
+  "seed": 42,
+  "output": {
+    "live": false,
+    "width": 500,
+    "height": 500,
+    "length": 60,
+    "FPS": 50
+  },
+  "patched": {
+    "circular": {
+      "period": 15,
+      "pink": {}
+    },
+    "patches": [
+      {
+        "gabor": {
+          "freq": 12,
+          "updates": [
+            {
+              "value": "theta",
+              "sin": {
+                "min_value": -20,
+                "max_value": 20,
+                "period": 20,
+                "initial_value": 0
+              }
+            }
+          ]
+        },
+        "x": {
+          "none": {
+            "initial_value": 120
+          }
+        }
+      }
+    ]
+  }
+}
