@@ -3,6 +3,7 @@ from generators.continuous_noise_generator import *
 from generators.gabor_generator import *
 from generators.patched_noise_generator import *
 from generators.pink_noise_generator import *
+from generators.single_color_generator import *
 from utils.updater import *
 
 
@@ -40,6 +41,9 @@ def get_noise(width, height, **kwargs):
     elif 'pink' in kwargs:
         return PinkNoise(width, height, **kwargs['pink'])
 
+    elif 'single' in kwargs:
+        return SingleColor(width, height, **kwargs['single'])
+
     elif 'continuous' in kwargs:
         specs = kwargs['continuous']
         generator = get_noise(width, height, **specs)
@@ -47,7 +51,8 @@ def get_noise(width, height, **kwargs):
         if 'interpolation' not in kwargs or specs['interpolation'] == 'simple':
             interpolation = interpolate
         else:
-            raise ValueError(f"The interpolation function {specs['interpolation']} wasn't recognized. Try using 'simple' instead")
+            raise ValueError(
+                f"The interpolation function {specs['interpolation']} wasn't recognized. Try using 'simple' instead")
 
         return ContinuousNoiseGenerator(width, height, generator=generator, interpolation=interpolation, **specs)
 

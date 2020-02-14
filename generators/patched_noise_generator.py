@@ -12,7 +12,7 @@ class PatchedNoiseGenerator(NoiseGenerator):
 
     def get_next_frame(self, dt=1):
         background_noise = self.background_generator.get_next_frame(dt)
-        normalize(background_noise)  # possibly redundant
+        normalize(background_noise, 0, 1)  # possibly redundant
 
         # The Patch is expected to have values in the interval [-1,1]
         for patch_generator, position_generator in self.patch_generators:

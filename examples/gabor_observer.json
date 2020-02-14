@@ -1,0 +1,34 @@
+{
+  "seed": 42,
+  "output": {
+    "live": true,
+    "width": 500,
+    "height": 500
+  },
+  "patched": {
+    "continuous": {
+      "single": {}
+    },
+    "patches": [
+      {
+        "gabor": {
+          "freq": 20,
+          "updates": [
+            {
+              "value": "theta",
+              "lin": {
+                "time_step": 20
+              }
+            }
+          ]
+        },
+        "x": {
+          "brown": {
+            "initial_value": 120,
+            "time_step": 10
+          }
+        }
+      }
+    ]
+  }
+}
