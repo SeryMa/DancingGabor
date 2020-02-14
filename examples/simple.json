@@ -1,14 +1,5 @@
 {
-  "seed": 42,
-
-  "output": {
-    "live": true,
-
-    "width": 1000,
-    "height": 800
-  },
-
-    "continuous": {
-      "pink": {}
-    }
+  "continuous": {
+    "pink": {}
+  }
 }

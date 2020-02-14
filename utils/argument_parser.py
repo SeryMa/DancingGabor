@@ -1,7 +1,7 @@
 import argparse
 import json
-from sys import argv
 from os import sep as separator
+from sys import argv
 
 import numpy as np
 
@@ -37,6 +37,8 @@ NOISES = [
     'patched',
     'gabor',
     'circular',
+    'single',
+    'plaid'
 ]
 
 
@@ -53,7 +55,10 @@ def get_json_config_args():
         'continuous': {'pink': {}}
     }
 
-    for file in argv[:0:-1]:
+    # TODO: Check which approach is more UX friendly. Either the later argument overrides former
+    #       or the other way around (former overrides later)
+    # for file in argv[:0:-1]:
+    for file in argv[1:]:
         with open(file) as config_file:
             new_dict = json.load(config_file)
 
@@ -61,8 +66,7 @@ def get_json_config_args():
             nested_update(data, new_dict)
 
             stripped = file[:file.rfind('.')]
-            stripped = stripped[stripped.rfind(separator)+len(separator):]
-
+            stripped = stripped[stripped.rfind(separator) + len(separator):]
             data['output']["file_name"] = stripped
 
     return data

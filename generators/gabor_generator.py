@@ -13,7 +13,7 @@ class GaborGenerator(NoiseGenerator):
         self.patch_size_px = int(patch_size_deg * ppd)
         width = height = np.sqrt(self.patch_size_px)
 
-        super(GaborGenerator, self).__init__(width, height, **kwargs)
+        super(GaborGenerator, self).__init__(width, height)
 
         self.update_list = update_list or []
 

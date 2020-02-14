@@ -8,7 +8,7 @@ class PatchedNoiseGenerator(NoiseGenerator):
     def __init__(self, width, height, generator: NoiseGenerator, patch_generators, **kwargs):
         self.background_generator = generator
         self.patch_generators = patch_generators
-        super(PatchedNoiseGenerator, self).__init__(width, height, **kwargs)
+        super(PatchedNoiseGenerator, self).__init__(width, height)
 
     def get_next_frame(self, dt=1):
         background_noise = self.background_generator.get_next_frame(dt)

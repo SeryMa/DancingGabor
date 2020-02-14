@@ -7,7 +7,7 @@ from utils.simple_functions import interpolate
 class ContinuousNoiseGenerator(NoiseGenerator):
     def __init__(self, width, height, generator: StaticNoiseGenerator = None, interpolation=interpolate, period=1,
                  **kwargs):
-        super(ContinuousNoiseGenerator, self).__init__(width, height, **kwargs)
+        super(ContinuousNoiseGenerator, self).__init__(width, height)
 
         self.generator = generator if generator is not None else PinkNoise(width, height)
         self.interpolation = interpolation

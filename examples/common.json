@@ -1,0 +1,8 @@
+{
+  "seed": 42,
+  "output": {
+    "live": true,
+    "width": 500,
+    "height": 500
+  }
+}

@@ -26,13 +26,14 @@ def nested_update(original, update):
 
 
 def nested_clear_override(original, update, override_keys):
-    original_override = next(filter(lambda key: key in override_keys, original))
-    update_override = next(filter(lambda key: key in override_keys, update))
+    original_override = next(filter(lambda key: key in override_keys, original), '')
+    update_override = next(filter(lambda key: key in override_keys, update), '')
 
-    if original_override == update_override:
-        nested_clear_override(original[original_override], update[update_override], override_keys)
-    else:
-        original.pop(original_override)
+    if original_override:
+        if update_override and original_override == update_override:
+            nested_clear_override(original[original_override], update[update_override], override_keys)
+        else:
+            original.pop(original_override)
 
 
 def id(x):

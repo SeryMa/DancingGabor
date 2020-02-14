@@ -1,12 +1,4 @@
 {
-  "seed": 42,
-  "output": {
-    "live": false,
-    "width": 500,
-    "height": 500,
-    "length": 60,
-    "FPS": 50
-  },
   "patched": {
     "circular": {
       "period": 15,
