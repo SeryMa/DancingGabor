@@ -1,8 +1,8 @@
 {
   "patched": {
-    "circular": {
-      "period": 15,
-      "pink": {}
+    "continuous": {
+      "circular": {},
+      "period": 15
     },
     "patches": [
       {

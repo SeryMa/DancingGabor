@@ -1,7 +1,9 @@
 {
   "patched": {
     "continuous": {
-      "single": {}
+      "single": {
+        "color": 1.0
+      }
     },
     "patches": [
       {

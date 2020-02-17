@@ -6,12 +6,13 @@ from utils.array import ArrayImage
 
 
 class PygletOutput(Output):
-    def __init__(self, get_next_frame, width, height, **kwargs):
+    def __init__(self, get_next_frame, width, height, fps=30, **kwargs):
         super(PygletOutput, self).__init__(get_next_frame, **kwargs)
 
         self.window = pyglet.window.Window(width=width, height=height, resizable=True)
         self.frame_data = self.get_next_frame(0)
         self.arr_img = ArrayImage(self.frame_data)
+        self.fps = fps
 
         @self.window.event
         def on_draw():
@@ -34,13 +35,17 @@ class PygletOutput(Output):
                 pass
 
     def __update(self, dt=1):
-        """
-        :param dt: time in seconds from the last rendering of the window
+        """ Updates the output handler
+
+        Updates the frame data with new values.
+
+        Parameters
+        ----------
+        dt: number
+            Time in seconds from the last rendering of the window
         """
         self.frame_data = self.get_next_frame(dt)
 
-    def run(self, clock_interval=40.0, **kwargs):
-        pyglet.clock.schedule_interval(self.__update, 1.0 / clock_interval)
+    def run(self):
+        pyglet.clock.schedule_interval(self.__update, 1.0 / self.fps)
         pyglet.app.run()
-
-

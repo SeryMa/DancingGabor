@@ -23,7 +23,7 @@ class VideoOutput(Output):
         file_name = f'{video_name}_{width}_{height}_{datetime.now().microsecond}.avi'
         self.video = VideoWriter(file_name, fourcc, float(fps), (width, height), 0)
 
-    def run(self, **kwargs):
+    def run(self):
         for _ in range(self.FPS * self.length):
             frame = cast_to_uint8(self.get_next_frame(dt=1 / self.FPS))
             self.video.write(frame)

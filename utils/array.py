@@ -50,15 +50,34 @@ class ArrayImage:
         self._update_image()
 
 
-def normalize(array, min=None, max=None):
-    """
+def normalize(array: np.ndarray, min_value=None, max_value=None):
+    """ In place normalizes given array.
+
+    Given array is normalized. After normalization the array will be within the [0, 1] interval.
     Works in place!
-    :param array: Array to normalize - after normalization the array will be within the [0, 1] interval
-    :param min: Expected min of the GIVEN array
-    :param max: Expected max of the GIVEN array
+
+    Parameters
+    ----------
+    array : np.ndarray
+        Array to be normalized.
+
+    min_value : None or number
+        Expected min of the GIVEN array - before normalization
+
+    max_value : None or number
+        Expected max of the GIVEN array - before normalization
     """
-    array -= np.min(array) if min is None else min
-    array /= np.max(array) if max is None else max
+    min_value = np.min(array) if min_value is None else min_value
+    max_value = (np.max(array) if max_value is None else max_value)
+
+    if min_value == max_value:
+        if max_value > 1:
+            array /= max_value
+
+        return
+
+    array -= min_value
+    array /= max_value - min_value
 
 
 def cast_to_uint8(array, min=None, max=None, clip_min=None, clip_max=None):

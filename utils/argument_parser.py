@@ -86,4 +86,9 @@ def prepare_app(args_source='json'):
 
     output_args = args['output']
 
-    return get_noise(output_args['width'], output_args['height'], **args), output_args
+    noise_generator = get_noise(output_args['width'], output_args['height'], **args)
+
+    if not noise_generator:
+        raise ValueError(f"Any noise type wasn't recognized.")
+
+    return noise_generator, output_args

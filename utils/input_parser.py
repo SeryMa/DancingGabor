@@ -31,7 +31,7 @@ def get_position_updater(**kwargs):
 
 def get_value_updater(**kwargs):
     updater = get_updater(**kwargs)
-    return lambda dt: updater.update(dt)
+    return updater.update
 
 
 def get_noise(width, height, **kwargs):
@@ -44,6 +44,12 @@ def get_noise(width, height, **kwargs):
     elif 'single' in kwargs:
         return SingleColor(width, height, **kwargs['single'])
 
+    elif 'circular' in kwargs:
+        specs = kwargs['circular']
+        generator = get_noise(width, height, **specs)
+
+        return CircularNoiseGenerator(width, height, generator=generator, **specs)
+
     elif 'continuous' in kwargs:
         specs = kwargs['continuous']
         generator = get_noise(width, height, **specs)
@@ -55,17 +61,6 @@ def get_noise(width, height, **kwargs):
                 f"The interpolation function {specs['interpolation']} wasn't recognized. Try using 'simple' instead")
 
         return ContinuousNoiseGenerator(width, height, generator=generator, interpolation=interpolation, **specs)
-
-    elif 'circular' in kwargs:
-        specs = kwargs['circular']
-        generator = get_noise(width, height, **specs)
-
-        if 'interpolation' not in specs or specs['interpolation'] == 'simple':
-            interpolation = interpolate
-        else:
-            raise ValueError(f"The interpolation function {specs['interpolation']} wasn't recognized. Try using 'simple' instead")
-
-        return CircularNoiseGenerator(width, height, generator=generator, interpolation=interpolation, **specs)
 
     elif 'patched' in kwargs:
         specs = kwargs['patched']
@@ -105,4 +100,4 @@ def get_noise(width, height, **kwargs):
         return PlaidGenerator(update_list=update_list, **specs)
 
     else:
-        raise ValueError(f"Any noise type wasn't recognized.")
+        return None
