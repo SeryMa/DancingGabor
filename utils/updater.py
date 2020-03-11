@@ -68,7 +68,7 @@ class BrownianUpdater(Updater):
 
 class CircularUpdater(SinUpdater):
     def __init__(self, center=0, distance=1, period=1, initial_time=0):
-        super(CircularUpdater, self).__init__(center-distance, center+distance, period, initial_time, center)
+        super(CircularUpdater, self).__init__(center - distance, center + distance, period, initial_time, center)
 
 
 # TODO: create an updater that takes as an input two updaters and creates the output as a composite

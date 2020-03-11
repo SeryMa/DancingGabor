@@ -4,6 +4,9 @@ from generators.gabor_generator import *
 from generators.patched_noise_generator import *
 from generators.pink_noise_generator import *
 from generators.single_color_generator import *
+from heat_map_generator import *
+from noise_processing.diff_noise_generator import *
+from noise_processing.image_proceser import *
 from utils.updater import *
 
 
@@ -43,6 +46,24 @@ def get_noise(width, height, **kwargs):
 
     elif 'single' in kwargs:
         return SingleColor(width, height, **kwargs['single'])
+
+    elif 'diff' in kwargs:
+        specs = kwargs['diff']
+        generator = get_noise(width, height, **specs)
+
+        return DifferenceNoiseGenerator(width, height, generator=generator, **specs)
+
+    elif 'heat' in kwargs:
+        specs = kwargs['heat']
+        generator = get_noise(width, height, **specs)
+
+        return HeatMapGenerator(width, height, window_size=20, generator=generator, **specs)
+
+    elif 'process' in kwargs:
+        specs = kwargs['process']
+        generator = get_noise(width, height, **specs)
+
+        return ImageProceser(width, height, window_size=20, generator=generator, **specs)
 
     elif 'circular' in kwargs:
         specs = kwargs['circular']

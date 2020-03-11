@@ -4,4 +4,3 @@ class Output:
 
     def run(self, **kwargs) -> None:
         pass
-

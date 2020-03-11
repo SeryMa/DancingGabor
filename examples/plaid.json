@@ -1,7 +1,7 @@
 {
   "patched": {
     "continuous": {
-      "period": 5
+      "period": 2
     },
     "patches": [
       {

@@ -6,7 +6,7 @@ from sys import argv
 import numpy as np
 
 from utils.input_parser import get_noise
-from utils.simple_functions import nested_clear_override, nested_update
+from utils.simple_functions import nested_clear_override, nested_update, nested_replace
 
 
 def get_command_line_args():
@@ -32,13 +32,19 @@ def get_command_line_args():
 
 NOISES = [
     'white',
-    'continuous',
     'pink',
-    'patched',
-    'gabor',
-    'circular',
     'single',
-    'plaid'
+
+    'continuous',
+    'patched',
+    'circular',
+
+    'plaid',
+    'gabor',
+
+    'diff',
+    'heat',
+    'process'
 ]
 
 
@@ -62,11 +68,13 @@ def get_json_config_args():
         with open(file) as config_file:
             new_dict = json.load(config_file)
 
-            nested_clear_override(data, new_dict, NOISES)
-            nested_update(data, new_dict)
+            if not nested_replace(data, new_dict, 'noise'):
+                nested_clear_override(data, new_dict, NOISES)
+                nested_update(data, new_dict)
 
             stripped = file[:file.rfind('.')]
             stripped = stripped[stripped.rfind(separator) + len(separator):]
+            # noinspection PyTypeChecker
             data['output']["file_name"] = stripped
 
     return data

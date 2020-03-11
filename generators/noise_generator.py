@@ -34,6 +34,18 @@ class NoiseGenerator:
         self.width = width
         self.height = height
 
+        self.last_frame = None
+
+    def __update__(self, dt=1) -> None:
+        """Updates inner variables.
+
+        Parameters
+        ----------
+        dt : int
+            The time that has passed after last update.
+        """
+        pass
+
     def get_next_frame(self, dt=1) -> ndarray:
         """Generates next frame.
 
@@ -46,7 +58,10 @@ class NoiseGenerator:
         ----------
         ndarray
         """
-        pass
+        if dt > 0 or self.last_frame is None:
+            self.__update__(dt)
+
+        return self.last_frame
 
 
 class StaticNoiseGenerator:

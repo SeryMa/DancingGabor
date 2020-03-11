@@ -1,5 +1,6 @@
 {
   "continuous": {
-    "pink": {}
+    "pink": {},
+    "period": 15
   }
 }

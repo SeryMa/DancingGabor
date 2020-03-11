@@ -60,13 +60,12 @@ class ContinuousNoiseGenerator(NoiseGenerator):
 
         self.currentTime -= self.period
 
-    def get_next_frame(self, dt=1):
+    def __update__(self, dt=1) -> None:
         self.currentTime += dt
 
         while self.currentTime >= self.period:
             self.__set_new_goal__()
 
         perc = self.currentTime / self.period
-        frame = self.interpolation(self.origin, self.goal, perc)
 
-        return frame
+        self.last_frame = self.interpolation(self.origin, self.goal, perc)

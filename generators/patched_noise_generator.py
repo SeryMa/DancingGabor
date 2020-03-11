@@ -5,12 +5,14 @@ from utils.array import normalize, apply_patch
 
 
 class PatchedNoiseGenerator(NoiseGenerator):
-    def __init__(self, width, height, generator: NoiseGenerator, patch_generators, **kwargs):
+    def __init__(self, width, height, generator: NoiseGenerator, patch_generators, contrast=0.5, **kwargs):
         self.background_generator = generator
         self.patch_generators = patch_generators
         super(PatchedNoiseGenerator, self).__init__(width, height)
 
-    def get_next_frame(self, dt=1):
+        self.contrast = contrast
+
+    def __update__(self, dt=1) -> None:
         background_noise = self.background_generator.get_next_frame(dt)
         normalize(background_noise)
 
@@ -20,6 +22,6 @@ class PatchedNoiseGenerator(NoiseGenerator):
             x, y = np.rint(position_generator(dt)).astype('int')
 
             # apply_patch(background_noise, patch, x, y, overwrite=True)
-            apply_patch(background_noise, patch, x, y, contrast=0.5)
+            apply_patch(background_noise, patch, x, y, contrast=self.contrast)
 
-        return np.clip(background_noise, 0, 1)
+        self.last_frame = np.clip(background_noise, 0, 1)
