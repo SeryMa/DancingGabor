@@ -11,5 +11,8 @@ __pycache__/
 
 
 *.avi
+*.csv
+*.pdf
+*.png
 /suggestions
 /test.py

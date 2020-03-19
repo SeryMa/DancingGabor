@@ -2,16 +2,23 @@ import csv
 
 from generators.noise_generator import NoiseGenerator
 from noise_processing.noise_processor import NoiseProcessor
+from utils.simple_functions import construct_file_name
 
 
 class NoiseGeneratorWithCSVOutput(NoiseProcessor):
-    def __init__(self, generator: NoiseGenerator, file="output.csv", delimiter=';', output_values=None, **kwargs):
+    def __init__(self, generator: NoiseGenerator, file_name=None, delimiter=';', output_values=None, fieldnames=None,
+                 **kwargs):
         super(NoiseGeneratorWithCSVOutput, self).__init__(generator)
 
         self.output_values = output_values or []
 
-        self.output_file = open(file, mode='w')
+        # It's required to add empty newline to not add empty lines between rows
+        # see: https://docs.python.org/3/library/csv.html#id3
+        self.output_file = open(file_name or construct_file_name(file_name, extension='csv'), mode='w', newline='')
+
         self.output_file_writer = csv.writer(self.output_file, delimiter=delimiter)
+
+        self.output_file_writer.writerow(['time'] + fieldnames or [])
 
         self.time = 0
 

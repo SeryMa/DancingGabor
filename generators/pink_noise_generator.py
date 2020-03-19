@@ -3,6 +3,7 @@ from numpy import fft
 
 from generators.noise_generator import StaticNoiseGenerator
 from generators.white_noise_generator import WhiteNoise
+from utils.array import normalize
 
 
 class PinkNoise(StaticNoiseGenerator):
@@ -31,4 +32,5 @@ class PinkNoise(StaticNoiseGenerator):
         clipped_noise = np.clip(unclipped_noise, -2 * std_un, 2 * std_un)
         clipped_noise = np.real(clipped_noise)
 
-        return clipped_noise / clipped_noise.max()
+        normalize(clipped_noise)
+        return clipped_noise

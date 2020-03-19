@@ -87,3 +87,16 @@ def get_similarity(image_a: np.ndarray, image_b: np.ndarray) -> np.ndarray:
         fft.rfft2(image_a),
         fft.rfft2(image_b)
     )
+
+
+def read_file(filename, delimiter=';') -> dict:
+    with open(filename, 'r') as file:
+        headers = file.readline().split(delimiter)
+
+    all_values = np.loadtxt(filename, delimiter=delimiter, skiprows=1)
+
+    ret = {}
+    for header, values in zip(headers, all_values):
+        ret[header] = values
+
+    return ret

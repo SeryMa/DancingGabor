@@ -53,7 +53,7 @@ class ArrayImage:
 
 
 def get_luminance(image: np.ndarray) -> float:
-    return np.average(image)
+    return image.mean()
 
 
 def get_rms_contrast(image: np.ndarray) -> float:
@@ -75,7 +75,8 @@ K2 = 0.03
 def ssim(image_a: np.ndarray, image_b: np.ndarray) -> float:
     dynamic_range = max(
         get_dynamic_range(image_a),
-        get_dynamic_range(image_b)
+        get_dynamic_range(image_b),
+        1
     )
 
     stabilize_1 = (K1 * dynamic_range) ** 2
@@ -85,7 +86,7 @@ def ssim(image_a: np.ndarray, image_b: np.ndarray) -> float:
     lum_b = get_luminance(image_b)
 
     numerator = (2 * lum_a * lum_b + stabilize_1) * (2 * covariance(image_a, image_b) + stabilize_2)
-    denominator = (lum_a ** 2 + lum_b ** 2 + stabilize_1) * (np.var(image_a) ** 2 + np.var(image_b) ** 2 + stabilize_2)
+    denominator = (lum_a ** 2 + lum_b ** 2 + stabilize_1) * (np.var(image_a) + np.var(image_b) + stabilize_2)
 
     return numerator / denominator
 
@@ -95,4 +96,12 @@ def dssim(image_a: np.ndarray, image_b: np.ndarray) -> float:
 
 
 def covariance(image_a: np.ndarray, image_b: np.ndarray) -> float:
-    return np.cov(image_a, image_b)[0][1]
+    return np.cov(image_a.flat, image_b.flat, bias=True)[0][1]
+    # if image_a.size != image_b.size:
+    #     raise ValueError('Cannot compute covariance of two arrays of different sizes')
+    #
+    # mean_a = image_a.mean()
+    # mean_b = image_b.mean()
+    # s = np.sum([(a - mean_a)*(b - mean_b) for a, b in zip(image_a.flat, image_b.flat)])
+    #
+    # return s / image_a.size

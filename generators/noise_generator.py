@@ -61,7 +61,7 @@ class NoiseGenerator:
         if dt > 0 or self.last_frame is None:
             self.__update__(dt)
 
-        return self.last_frame
+        return self.last_frame.copy()
 
 
 class StaticNoiseGenerator:

@@ -1,4 +1,7 @@
 import collections
+from datetime import datetime
+from os import makedirs, chdir
+from os.path import exists, sep
 
 import numpy as np
 
@@ -54,3 +57,17 @@ def nested_clear_override(original: {}, update: {}, override_keys: [str]):
         nested_clear_override(original[original_override], update[update_override], override_keys)
     else:
         original.pop(original_override)
+
+
+def construct_file_name(base_name: str, extension='', folder='', change_dir=False):
+    if sep in base_name:
+        tmp = base_name.split(sep)
+        base_name = tmp[-1]
+
+        folder = folder + sep + sep.join(tmp[:-1])
+
+    if folder:
+        exists(folder) or makedirs(folder, exist_ok=True)
+        change_dir and chdir(folder)
+
+    return f'{base_name}_{datetime.now().microsecond}{("." + extension) if extension else ""}'
