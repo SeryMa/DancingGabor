@@ -32,6 +32,28 @@ def normalize(array: np.ndarray, min_value=None, max_value=None):
     array /= max_value - min_value
 
 
+def get_normalized(array: np.ndarray, min_value=None, max_value=None):
+    """ Creates a normalized array which is then returned.
+
+    The normalized array will be within the [0, 1] interval.
+
+    Parameters
+    ----------
+    array : np.ndarray
+        Array to get normalized form of.
+
+    min_value : None or number
+        Expected min of the GIVEN array - before normalization
+
+    max_value : None or number
+        Expected max of the GIVEN array - before normalization
+    """
+    ret = array.copy()
+    normalize(ret, min_value, max_value)
+
+    return ret
+
+
 def cast_to_uint8(array, min_value=None, max_value=None, clip_min=None, clip_max=None):
     if clip_min or clip_max:
         array = np.clip(array,

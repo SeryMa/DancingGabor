@@ -2,6 +2,7 @@ import numpy as np
 import numpy.fft as fft
 
 from generators.noise_generator import NoiseGenerator
+from utils.array import get_normalized
 
 
 # TODO: create a `StaticGaborGenerator` which would not compute a new gabor every iteration
@@ -29,12 +30,25 @@ class GaborGenerator(NoiseGenerator):
 
         self.gauss = self.get_gauss_cutout()
 
+        self.__should_update_normalized = True
+        self.__normalized_patch = None
+
         # TODO: try to think about a different approach to double initialized values
         self.__update__(0)
+
+    def get_normalized_patch(self):
+        if self.__should_update_normalized:
+            self.__normalized_patch = get_normalized(self.last_frame)
+            self.__should_update_normalized = False
+
+        return self.__normalized_patch
 
     def __update_values__(self, dt=1) -> None:
         for name, update_function in self.update_list:
             self.__dict__[name] = update_function(dt)
+
+        self.__should_update_normalized = True
+        self.__normalized_patch = None
 
     def __update__(self, dt=1) -> None:
         self.__update_values__(dt)

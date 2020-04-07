@@ -26,6 +26,13 @@ def all_lambda(i, predicate):
     return all(predicate(e) for e in i)
 
 
+def create_slice_indices(slices, initial_offset=0):
+    offset = initial_offset or 0
+    for single_slice in slices:
+        yield range(offset, offset + single_slice)
+        offset += single_slice
+
+
 def nested_update(original, update):
     for key, value in update.items():
         if key in original and isinstance(value, collections.Mapping):

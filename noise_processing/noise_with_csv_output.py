@@ -6,11 +6,12 @@ from utils.simple_functions import construct_file_name
 
 
 class NoiseGeneratorWithCSVOutput(NoiseProcessor):
-    def __init__(self, generator: NoiseGenerator, file_name=None, delimiter=';', output_values=None, fieldnames=None,
+    def __init__(self, generator: NoiseGenerator, file_name=None, delimiter=';', output_generators=None,
+                 fieldnames=None,
                  **kwargs):
         super(NoiseGeneratorWithCSVOutput, self).__init__(generator)
 
-        self.output_values = output_values or []
+        self.output_values = output_generators or []
 
         # It's required to add empty newline to not add empty lines between rows
         # see: https://docs.python.org/3/library/csv.html#id3
