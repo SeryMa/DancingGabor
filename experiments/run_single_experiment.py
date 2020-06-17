@@ -33,15 +33,7 @@ def get_command_line_args():
     return parser.parse_args().__dict__
 
 
-def run_experiment(size=500, length=10, ppd=80, exp_name='test', live=True, output_diff=False, delimiter=';',
-                   gabor=True,
-                   theta_speed: int = None, phase_speed: int = None, freq_speed: int = None, patch_position=(0, 0),
-                   patch_shift_x=0, patch_shift_y=0, contrast=0.5, period=1, output_values: [str] = None,
-                   granularity=0):
-    width = height = size
-
-    base_noise = ContinuousNoiseGenerator(width, height, PinkNoise(width, height), period=period)
-
+def get_patch_value_updates(theta_speed: float = None, phase_speed: float = None, freq_speed: float = None):
     update_list = []
     if theta_speed is not None:
         update_list.append(
@@ -58,19 +50,35 @@ def run_experiment(size=500, length=10, ppd=80, exp_name='test', live=True, outp
             ('freq', LinUpdater(initial_value=0.00, time_step=freq_speed).update)
         )
 
-    def position_updater():
-        if patch_shift_x or patch_shift_y:
-            x_updater = LinUpdater(initial_value=patch_position[0], time_step=patch_shift_x)
-            y_updater = LinUpdater(initial_value=patch_position[1], time_step=patch_shift_y)
+    return update_list
 
-            return lambda dt: (x_updater.update(dt), y_updater.update(dt))
-        else:
-            return lambda dt: patch_position
 
-    patch_generator_constructor = GaborGenerator if gabor else PlaidGenerator
-    patch_generator = patch_generator_constructor(patch_size_deg=size / ppd, ppd=ppd, update_list=update_list)
+def get_position_updater(patch_shift=(0, 0), patch_position=(0, 0)):
+    if patch_shift[0] or patch_shift[1]:
+        x_updater = LinUpdater(initial_value=patch_position[0], time_step=patch_shift[0])
+        y_updater = LinUpdater(initial_value=patch_position[1], time_step=patch_shift[1])
 
-    noise_with_gabor = PatchedNoiseGenerator(width, height, base_noise, [(patch_generator, position_updater())],
+        return lambda dt: (x_updater.update(dt), y_updater.update(dt))
+    else:
+        return lambda dt: patch_position
+
+
+def get_patch_generator(gabor=True):
+    return GaborGenerator if gabor else PlaidGenerator
+
+
+def run_experiment(size=500, length=10, ppd=80, exp_name='test', live=True, output_diff=False, delimiter=';',
+                   gabor=True,
+                   theta_speed: int = None, phase_speed: int = None, freq_speed: int = None, patch_position=(0, 0),
+                   patch_shift_x=0, patch_shift_y=0, contrast=0.5, period=1, output_values: [str] = None,
+                   granularity=0):
+    width = height = size
+
+    base_noise = ContinuousNoiseGenerator(width, height, PinkNoise(width, height), period=period)
+    patch_generator = get_patch_generator(gabor)(patch_size_deg=size / ppd, ppd=ppd,
+                                                 update_list=get_patch_value_updates(theta_speed, phase_speed,
+                                                                                     freq_speed))
+    noise_with_gabor = PatchedNoiseGenerator(width, height, base_noise, [(patch_generator, get_position_updater())],
                                              contrast=contrast)
 
     if output_diff:

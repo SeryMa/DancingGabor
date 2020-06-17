@@ -7,6 +7,7 @@ from generators.single_color_generator import *
 from heat_map_generator import *
 from noise_processing.diff_noise_generator import *
 from noise_processing.image_proceser import *
+from utils.image import get_rms_contrast
 from utils.updater import *
 
 
@@ -39,86 +40,91 @@ def get_value_updater(**kwargs):
 
 def get_noise(width, height, **kwargs):
     if 'white' in kwargs:
-        return WhiteNoise(width, height)
+        kwargs.pop('white')
+        return WhiteNoise(width, height), kwargs
 
     elif 'pink' in kwargs:
-        return PinkNoise(width, height, **kwargs['pink'])
+        specs = kwargs.pop('pink')
+        return PinkNoise(width, height, **specs), kwargs
 
     elif 'single' in kwargs:
-        return SingleColor(width, height, **kwargs['single'])
+        specs = kwargs.pop('single')
+        return SingleColor(width, height, **specs), kwargs
 
     elif 'diff' in kwargs:
-        specs = kwargs['diff']
-        generator = get_noise(width, height, **specs)
+        generator, specs = get_noise(width, height, **kwargs.pop('diff'))
 
-        return DifferenceNoiseGenerator(width, height, generator=generator, **specs)
+        return DifferenceNoiseGenerator(generator=generator, **specs), kwargs
 
     elif 'heat' in kwargs:
-        specs = kwargs['heat']
-        generator = get_noise(width, height, **specs)
+        generator, specs = get_noise(width, height, **kwargs.pop('heat'))
 
-        return HeatMapGenerator(width, height, window_size=20, generator=generator, **specs)
+        def process_function(x1, x2, y1, y2):
+            return get_rms_contrast(generator.get_next_frame(0)[x1:x2, y1:y2])
+
+        return HeatMapGenerator(generator=generator, process_function=process_function, **specs), kwargs
 
     elif 'process' in kwargs:
-        specs = kwargs['process']
-        generator = get_noise(width, height, **specs)
+        generator, specs = get_noise(width, height, **kwargs.pop('process'))
 
-        return ImageProceser(width, height, window_size=20, generator=generator, **specs)
+        return ImageProceser(generator=generator, **specs), kwargs
 
     elif 'circular' in kwargs:
-        specs = kwargs['circular']
-        generator = get_noise(width, height, **specs)
+        generator, specs = get_noise(width, height, **kwargs.pop('circular'))
 
-        return CircularNoiseGenerator(width, height, generator=generator, **specs)
+        return CircularNoiseGenerator(width, height, generator=generator, **specs), kwargs
 
     elif 'continuous' in kwargs:
-        specs = kwargs['continuous']
-        generator = get_noise(width, height, **specs)
+        generator, specs = get_noise(width, height, **kwargs.pop('continuous'))
 
-        if 'interpolation' not in kwargs or specs['interpolation'] == 'simple':
-            interpolation = interpolate
-        else:
-            raise ValueError(
-                f"The interpolation function {specs['interpolation']} wasn't recognized. Try using 'simple' instead")
+        interpolation = interpolate
+        if 'interpolation' in kwargs:
+            interpolation_type = specs.pop('interpolation')
 
-        return ContinuousNoiseGenerator(width, height, generator=generator, interpolation=interpolation, **specs)
+            if interpolation_type != 'simple':
+                raise ValueError(
+                    f"The interpolation function {interpolation_type} wasn't recognized. Try using 'simple' instead")
+
+        return ContinuousNoiseGenerator(width, height, generator=generator, interpolation=interpolation,
+                                        **specs), kwargs
 
     elif 'patched' in kwargs:
-        specs = kwargs['patched']
-        generator = get_noise(width, height, **specs)
+        generator, specs = get_noise(width, height, **kwargs.pop('patched'))
 
         patch_generators = []
-        for patch in specs['patches']:
-            patch_generators.append((
-                get_noise(width, height, **patch),
-                get_position_updater(**patch)
-            ))
+        if 'patches' in specs:
+            for patch in specs.pop('patches'):
+                patch_generator, _ = get_noise(width, height, **patch)
+                patch_generators.append((patch_generator, get_position_updater(**patch)))
 
-        return PatchedNoiseGenerator(width, height, generator=generator, patch_generators=patch_generators, **specs)
+        return PatchedNoiseGenerator(width, height, generator=generator, patch_generators=patch_generators,
+                                     **specs), kwargs
 
     elif 'gabor' in kwargs:
-        specs = kwargs['gabor']
+        specs = kwargs.pop('gabor')
+
         update_list = []
         if 'updates' in specs:
-            for patch in specs['updates']:
+            for patch in specs.pop('updates'):
                 update_list.append((
-                    patch['value'],
+                    patch.pop('value'),
                     get_value_updater(**patch)
                 ))
 
-        return GaborGenerator(update_list=update_list, **specs)
+        return GaborGenerator(update_list=update_list, **specs), kwargs
 
     elif 'plaid' in kwargs:
-        specs = kwargs['plaid']
+        specs = kwargs.pop('plaid')
+
         update_list = []
         if 'updates' in specs:
-            for patch in specs['updates']:
+            for patch in specs.pop('updates'):
                 update_list.append((
-                    patch['value'],
+                    patch.pop('value'),
                     get_value_updater(**patch)
                 ))
 
-        return PlaidGenerator(update_list=update_list, **specs)
+        return PlaidGenerator(update_list=update_list, **specs), kwargs
 
     else:
-        return None
+        return None, kwargs

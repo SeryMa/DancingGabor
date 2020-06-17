@@ -26,8 +26,7 @@ class DifferenceNoiseGenerator(NoiseProcessor):
     def __process__(self, dt=1) -> None:
         diff = self.diff_function(self.new_frame_noise, self.last_frame_noise)
 
-        # noinspection PyArgumentList
-        max_distance = self.new_frame_noise.max() - self.new_frame_noise.min()
+        max_distance = self.diff_function(self.new_frame_noise.max(), self.new_frame_noise.min())
 
         # we expect that the values change at most from -1 to 1 in `period` [time units]
         # so values that are lower than `max_distance/period * dt`

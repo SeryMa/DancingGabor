@@ -1,15 +1,17 @@
+from typing import Callable
+
+from numpy import ndarray
+
 from generators.noise_generator import NoiseGenerator, StaticNoiseGenerator
 from generators.pink_noise_generator import PinkNoise
-
 from utils.simple_functions import interpolate
 
 
 class ContinuousNoiseGenerator(NoiseGenerator):
-    """ContinuousNoiseGenerator that iterates over a pre-defined list of noise frames.
+    """ `NoiseGenerator` that takes `StaticNoiseGenerator` and creates a continuous time stream of noise images
 
-    This ContinuousNoiseGenerator first generates a set list of noise frames.
-    The list is iterated over back and forth to get edge frames for the underlying ContinuousNoiseGenerator
-
+    After `period` time units new image from `generator` is generated. Using function `interpolate` a new image noise
+    is generated for given time. That way we can create a continuous stream of noise images.
 
     Parameters
     ----------
@@ -19,12 +21,17 @@ class ContinuousNoiseGenerator(NoiseGenerator):
     height : int
         Height of the generated noise
 
-    generator: StaticNoiseGenerator, optional
+    generator : StaticNoiseGenerator, optional
         The base StaticNoiseGenerator that is used to generate the list of defined frames.
-        If not set the generator defaults to PinkNoise
+        If not set the generator defaults to `PinkNoise`
 
-    interpolate, optional
+    interpolate : Callable[[ndarray, ndarray, float], ndarray], optional
+        Function that is used to interpolate between two consecutive noise images. The function accepts two noise parameters.
+        The starting noise and it's eventual goal noise. Third argument denotes the percentage of similarity (0 being the starting noise, 1 being the goal noise).
+        Defaults to linear interpolation of the noises.
 
+    period : int
+        Time period after which new frame from `generator` is generated.
 
     Attributes
     ----------
@@ -33,16 +40,10 @@ class ContinuousNoiseGenerator(NoiseGenerator):
 
     height : int
         Height of the generated noise
-
-    Methods
-    -------
-    get_next_frame(dt=1)
-        Gets next frame. `dt` denotes the time that has passed between two consecutive generations.
     """
 
-    def __init__(self, width: int, height: int, generator: StaticNoiseGenerator = None, interpolation=interpolate,
-                 period=1,
-                 **kwargs):
+    def __init__(self, width: int, height: int, generator: StaticNoiseGenerator = None,
+                 interpolation: Callable[[ndarray, ndarray, float], ndarray] = interpolate, period=1, **kwargs):
         super(ContinuousNoiseGenerator, self).__init__(width, height)
 
         self.generator = generator if generator is not None else PinkNoise(width, height)
@@ -68,4 +69,4 @@ class ContinuousNoiseGenerator(NoiseGenerator):
 
         perc = self.currentTime / self.period
 
-        self.last_frame = self.interpolation(self.origin, self.goal, perc)
+        self.frame = self.interpolation(self.origin, self.goal, perc)

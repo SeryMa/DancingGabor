@@ -46,9 +46,9 @@ class SinUpdater(Updater):
 
 
 class LinUpdater(Updater):
-    def __init__(self, time_step=1, initial_time=0, initial_value=0):
+    def __init__(self, time_step=1, initial_value=0):
         self.time_step = time_step
-        super(LinUpdater, self).__init__(initial_time, initial_value)
+        super(LinUpdater, self).__init__(0, initial_value)
 
     def __update_value__(self, dt=1):
         self.value += dt * self.time_step

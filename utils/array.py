@@ -54,6 +54,10 @@ def get_normalized(array: np.ndarray, min_value=None, max_value=None):
     return ret
 
 
+def transform_to_probabilistic_distribution(array):
+    array /= array.sum()
+
+
 def cast_to_uint8(array, min_value=None, max_value=None, clip_min=None, clip_max=None):
     if clip_min or clip_max:
         array = np.clip(array,
@@ -95,10 +99,26 @@ def apply_patch(source, patch, x, y, contrast=0.5, overwrite=False):
     source[:] = np.clip(source, 0, 1)[:]
 
 
+def value_fill(array, x, y, desired_shape, value=1):
+    filled = np.ones(desired_shape) * value
+    apply_patch(filled, array, x, y, contrast=1, overwrite=True)
+
+    return filled
+
+
+def get_windows_indices(array_shape, window_size_height=1, window_size_width=1, step=1):
+    for x in range(-window_size_height + step, array_shape[0], step):
+        for y in range(-window_size_width + step, array_shape[1], step):
+            yield max(0, x), x + window_size_height, max(0, y), y + window_size_width
+
+
 def get_windows(array, window_size_height=1, window_size_width=1, step=1):
-    for x in range(-window_size_height + step, array.shape[0], step):
-        for y in range(-window_size_width + step, array.shape[1], step):
-            yield array[max(0, x):x + window_size_height, max(0, y):y + window_size_width]
+    return [array[x1:x2, y1, y2] for x1, x2, y1, y2 in
+            get_windows_indices(array.shape, window_size_height, window_size_width, step)]
+
+    # for x in range(-window_size_height + step, array.shape[0], step):
+    #     for y in range(-window_size_width + step, array.shape[1], step):
+    #         yield array[max(0, x):x + window_size_height, max(0, y):y + window_size_width]
 
 
 # TODO: The phase invariant similarity S was defined as the cosine of the angle between the Fourier amplitude
