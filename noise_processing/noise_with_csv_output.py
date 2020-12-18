@@ -7,8 +7,7 @@ from utils.simple_functions import construct_file_name
 
 class NoiseGeneratorWithCSVOutput(NoiseProcessor):
     def __init__(self, generator: NoiseGenerator, file_name=None, delimiter=';', output_generators=None,
-                 fieldnames=None,
-                 **kwargs):
+                 fieldnames=None):
         super(NoiseGeneratorWithCSVOutput, self).__init__(generator)
 
         self.output_values = output_generators or []

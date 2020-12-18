@@ -6,6 +6,7 @@
     "patches": [
       {
         "plaid": {
+          "patch_size_deg": 2,
           "freq": 12,
           "updates": [
             {
@@ -27,6 +28,7 @@
       },
       {
         "gabor": {
+          "patch_size_deg": 2,
           "freq": 12,
           "updates": [
             {

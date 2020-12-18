@@ -52,7 +52,7 @@ class PatchedNoiseGenerator(NoiseGenerator):
 
     def __init__(self, width, height, generator: NoiseGenerator,
                  patch_generators: Iterable[Tuple[NoiseGenerator, Callable[[float], Tuple[float, float]]]],
-                 contrast=0.5, **kwargs):
+                 contrast=0.5):
         self.background_generator = generator
         self.patch_generators = patch_generators
         super(PatchedNoiseGenerator, self).__init__(width, height)

@@ -25,12 +25,12 @@ class ContinuousNoiseGenerator(NoiseGenerator):
         The base StaticNoiseGenerator that is used to generate the list of defined frames.
         If not set the generator defaults to `PinkNoise`
 
-    interpolate : Callable[[ndarray, ndarray, float], ndarray], optional
-        Function that is used to interpolate between two consecutive noise images. The function accepts two noise parameters.
-        The starting noise and it's eventual goal noise. Third argument denotes the percentage of similarity (0 being the starting noise, 1 being the goal noise).
-        Defaults to linear interpolation of the noises.
+    interpolation : Callable[[ndarray, ndarray, float], ndarray], optional Function that is used to interpolate between
+    two consecutive noise images. The function accepts two noise parameters. The starting noise and it's eventual
+    goal noise. Third argument denotes the percentage of similarity (0 being the starting noise, 1 being the goal
+    noise). Defaults to linear interpolation of the noises.
 
-    period : int
+    period : float
         Time period after which new frame from `generator` is generated.
 
     Attributes
@@ -43,7 +43,7 @@ class ContinuousNoiseGenerator(NoiseGenerator):
     """
 
     def __init__(self, width: int, height: int, generator: StaticNoiseGenerator = None,
-                 interpolation: Callable[[ndarray, ndarray, float], ndarray] = interpolate, period=1, **kwargs):
+                 interpolation: Callable[[ndarray, ndarray, float], ndarray] = interpolate, period=1.):
         super(ContinuousNoiseGenerator, self).__init__(width, height)
 
         self.generator = generator if generator is not None else PinkNoise(width, height)

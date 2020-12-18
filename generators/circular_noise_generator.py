@@ -16,14 +16,10 @@ class CircularNoiseGenerator(StaticNoiseGenerator):
     width : int
         Width of the generated noise
 
-    height : int
-        Height of the generated noise
-    generator : StaticNoiseGenerator, optional
-        Generator that is used to pre-generate the frame sequence
-    sequence_length : int, optional
-        Length of the frame sequence
-    reverse_return : bool, optional
-        Defines how is the sequence re-iterated. Either by starting the iteration over (`False` value) or going through the sequence in reversed order (`False` value).
+    height : int Height of the generated noise generator : StaticNoiseGenerator, optional Generator that is used to
+    pre-generate the frame sequence sequence_length : int, optional Length of the frame sequence reverse_return :
+    bool, optional Defines how is the sequence re-iterated. Either by starting the iteration over (`False` value) or
+    going through the sequence in reversed order (`False` value).
 
     Methods
     -------

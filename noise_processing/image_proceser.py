@@ -5,21 +5,20 @@ from noise_processing.noise_processor import NoiseProcessor
 from utils.array import get_windows
 
 
-class ImageProceser(NoiseProcessor):
-    def __init__(self, generator: NoiseGenerator, window_size: int = 10, step: int = None, process_functions=None,
-                 **kwargs):
-        super(ImageProceser, self).__init__(generator)
+class ImageProcesser(NoiseProcessor):
+    def __init__(self, generator: NoiseGenerator, window_size: int = 10, step: int = None, process_functions=None):
+        super(ImageProcesser, self).__init__(generator)
 
         self.window_size = window_size
         self.step = step if step is not None else self.window_size // 2
         self.process_functions = process_functions or []
 
-        self.height_dim = (self.height + self.step) // self.step
-        self.width_dim = (self.width + self.step) // self.step
+        self.height_dim = (self.height // self.step) + 1
+        self.width_dim = (self.width // self.step) + 1
         self.value_windows = None
 
     def __process__(self, dt=1) -> None:
-        window_iterator = get_windows(self.last_frame, self.window_size, self.window_size, self.step)
+        window_iterator = get_windows(self.frame, self.window_size, self.window_size, self.step)
 
         flat_map = [
             [process_function(window) for process_function in self.process_functions]

@@ -44,8 +44,8 @@ def get_noise(width, height, **kwargs):
         return WhiteNoise(width, height), kwargs
 
     elif 'pink' in kwargs:
-        specs = kwargs.pop('pink')
-        return PinkNoise(width, height, **specs), kwargs
+        kwargs.pop('pink')
+        return PinkNoise(width, height), kwargs
 
     elif 'single' in kwargs:
         specs = kwargs.pop('single')
@@ -54,6 +54,7 @@ def get_noise(width, height, **kwargs):
     elif 'diff' in kwargs:
         generator, specs = get_noise(width, height, **kwargs.pop('diff'))
 
+        # TODO: Fill in the missing diff function
         return DifferenceNoiseGenerator(generator=generator, **specs), kwargs
 
     elif 'heat' in kwargs:
@@ -67,7 +68,7 @@ def get_noise(width, height, **kwargs):
     elif 'process' in kwargs:
         generator, specs = get_noise(width, height, **kwargs.pop('process'))
 
-        return ImageProceser(generator=generator, **specs), kwargs
+        return ImageProcesser(generator=generator), kwargs
 
     elif 'circular' in kwargs:
         generator, specs = get_noise(width, height, **kwargs.pop('circular'))
@@ -97,8 +98,7 @@ def get_noise(width, height, **kwargs):
                 patch_generator, _ = get_noise(width, height, **patch)
                 patch_generators.append((patch_generator, get_position_updater(**patch)))
 
-        return PatchedNoiseGenerator(width, height, generator=generator, patch_generators=patch_generators,
-                                     **specs), kwargs
+        return PatchedNoiseGenerator(width, height, generator=generator, patch_generators=patch_generators), kwargs
 
     elif 'gabor' in kwargs:
         specs = kwargs.pop('gabor')

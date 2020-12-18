@@ -5,7 +5,9 @@
     },
     "patches": [
       {
-        "gabor": {},
+        "gabor": {
+          "patch_size_deg": 2
+        },
         "x": {
           "circ": {
             "center": 250,

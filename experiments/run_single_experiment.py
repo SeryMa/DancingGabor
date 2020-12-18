@@ -1,6 +1,5 @@
 import argparse
 
-from experiments.graphs import create_graphs
 from generators.continuous_noise_generator import ContinuousNoiseGenerator
 from generators.gabor_generator import GaborGenerator, PlaidGenerator
 from generators.patched_noise_generator import PatchedNoiseGenerator
@@ -9,12 +8,13 @@ from noise_processing.diff_noise_generator import DifferenceNoiseGenerator
 from noise_processing.noise_with_csv_output import NoiseGeneratorWithCSVOutput
 from outputs.pyglet_app import PygletOutput
 from outputs.video_output import VideoOutput
-from utils.image import get_rms_contrast, get_luminance, ssim
+from utils.image import cw_ssim, ssim, luminance_comparison, contrast_comparison, structural_similarity
 from utils.patch_compare import PatchComparator
-from utils.simple_functions import construct_file_name, create_slice_indices
+from utils.simple_functions import construct_file_name
 from utils.updater import LinUpdater
 
 
+# noinspection PyTypeChecker
 def get_command_line_args():
     # Parse arguments
     parser = argparse.ArgumentParser()
@@ -42,12 +42,12 @@ def get_patch_value_updates(theta_speed: float = None, phase_speed: float = None
 
     if phase_speed is not None:
         update_list.append(
-            ('phase', LinUpdater(initial_value=0.00, time_step=phase_speed).update)
+            ('phase', LinUpdater(initial_value=0., time_step=phase_speed).update)
         )
 
     if freq_speed is not None:
         update_list.append(
-            ('freq', LinUpdater(initial_value=0.00, time_step=freq_speed).update)
+            ('freq', LinUpdater(initial_value=6., time_step=freq_speed).update)
         )
 
     return update_list
@@ -67,18 +67,25 @@ def get_patch_generator(gabor=True):
     return GaborGenerator if gabor else PlaidGenerator
 
 
-def run_experiment(size=500, length=10, ppd=80, exp_name='test', live=True, output_diff=False, delimiter=';',
-                   gabor=True,
+def run_experiment(size=500, length=10, ppd=60, fps=30, exp_name='test', live=True, output_diff=False, delimiter=';',
+                   gabor=True, alpha=1, beta=1, gamma=1,
                    theta_speed: int = None, phase_speed: int = None, freq_speed: int = None, patch_position=(0, 0),
                    patch_shift_x=0, patch_shift_y=0, contrast=0.5, period=1, output_values: [str] = None,
                    granularity=0):
     width = height = size
 
     base_noise = ContinuousNoiseGenerator(width, height, PinkNoise(width, height), period=period)
-    patch_generator = get_patch_generator(gabor)(patch_size_deg=size / ppd, ppd=ppd,
-                                                 update_list=get_patch_value_updates(theta_speed, phase_speed,
-                                                                                     freq_speed))
-    noise_with_gabor = PatchedNoiseGenerator(width, height, base_noise, [(patch_generator, get_position_updater())],
+    patch_constructor = get_patch_generator(gabor)
+    patch_generator = patch_constructor(patch_size_deg=size / ppd,
+                                        ppd=ppd,
+                                        update_list=get_patch_value_updates(theta_speed,
+                                                                            phase_speed,
+                                                                            freq_speed))
+    noise_with_gabor = PatchedNoiseGenerator(width,
+                                             height,
+                                             base_noise,
+                                             [(patch_generator,
+                                               get_position_updater((patch_shift_x, patch_shift_y), patch_position))],
                                              contrast=contrast)
 
     if output_diff:
@@ -88,101 +95,147 @@ def run_experiment(size=500, length=10, ppd=80, exp_name='test', live=True, outp
 
     output_name = construct_file_name(exp_name)
     with open(output_name + '.log', 'w') as f:
-        f.writelines([f'Log file for experiment {output_name}',
-                      f'The experiment presents one big {"gabor" if gabor else "plaid"} patch in pink noise scene. '
-                      f'New pink noise is generated every {period:.2f} s',
-                      f'Experiment settings:',
-                      f'Scene dimensions: {size}',
-                      f'Length [s]: {length}',
-                      f'Contrast: {contrast:.2f}',
-                      f'Patch position: {patch_position}',
-                      f'Position update (x, y) [s^-1]: {(patch_shift_x, patch_shift_y)}',
-                      f'Theta update [s^-1]: {theta_speed or 0:.2f}',
-                      f'Phase update [s^-1]: {phase_speed or 0:.2f}',
-                      f'Frequency update [s^-1]: {freq_speed or 0:.2f}',
+        f.writelines([f'Log file for experiment {output_name}\n',
+                      f'The experiment presents one big {"gabor" if gabor else "plaid"} patch in pink noise scene.\n'
+                      f'New pink noise is generated every {period:.2f} s\n',
+
+                      f'\nExperiment settings:\n',
+                      f'Scene dimensions: {size}\n',
+                      f'Length [s]: {length}\n',
+                      f'FPS: {fps}\n',
+                      f'PPD: {ppd}\n',
+                      f'Contrast: {contrast:.2f}\n',
+                      f'Patch position: {patch_position}\n',
+                      f'Position update (x, y) [s^-1]: {(patch_shift_x, patch_shift_y)}\n',
+                      f'Theta update [s^-1]: {theta_speed or 0:.2f}\n',
+                      f'Phase update [s^-1]: {phase_speed or 0:.2f}\n',
+                      f'Frequency update [s^-1]: {freq_speed or 0:.2f}\n',
                       ])
 
-    output_values = ['Luminance', 'Contrast', 'SSIM'] if output_values is None else output_values
+    output_values = [] if output_values is None else output_values
     fieldnames = []
     output_generators = []
-    data_slices = []
-    base_labels = ['Noise with gabor', 'Noise without gabor', 'Gabor']
-    labels = []
-    titles = []
     for output_value in output_values:
-        titles.append(f'{output_value} values')
         output_value = output_value.lower()
         if output_value == 'luminance':
             fieldnames.extend([
-                'luminance_with_gabor',
-                'luminance_without_gabor',
-                'luminance_gabor',
+                'compare_lum_gabor_noise_vs_gabor',
+                'compare_lum_noise_vs_gabor',
+                'compare_lum_gabor_noise_vs_noise'
             ])
             output_generators.extend([
-                lambda: get_luminance(noise_with_gabor.get_next_frame(0)),
-                lambda: get_luminance(base_noise.get_next_frame(0)),
-                lambda: get_luminance(patch_generator.get_normalized_patch()),
+                lambda: luminance_comparison(noise_with_gabor.get_next_frame(0),
+                                             patch_generator.get_normalized_patch()),
+                lambda: luminance_comparison(base_noise.get_next_frame(0),
+                                             patch_generator.get_normalized_patch()),
+                lambda: luminance_comparison(noise_with_gabor.get_next_frame(0),
+                                             base_noise.get_next_frame(0)),
             ])
-            data_slices.append(3)
-            labels.append(base_labels)
         elif output_value == 'contrast':
             fieldnames.extend([
-                'contrast_with_gabor',
-                'contrast_without_gabor',
-                'contrast_gabor',
+                'compare_con_gabor_noise_vs_gabor',
+                'compare_con_noise_vs_gabor',
+                'compare_con_gabor_noise_vs_noise'
             ])
             output_generators.extend([
-                lambda: get_rms_contrast(noise_with_gabor.get_next_frame(0)),
-                lambda: get_rms_contrast(base_noise.get_next_frame(0)),
-                lambda: get_rms_contrast(patch_generator.get_normalized_patch()),
+                lambda: contrast_comparison(noise_with_gabor.get_next_frame(0),
+                                            patch_generator.get_normalized_patch()),
+                lambda: contrast_comparison(base_noise.get_next_frame(0),
+                                            patch_generator.get_normalized_patch()),
+                lambda: contrast_comparison(noise_with_gabor.get_next_frame(0),
+                                            base_noise.get_next_frame(0)),
             ])
-            data_slices.append(3)
-            labels.append(base_labels)
+        elif output_value == 'structure':
+            fieldnames.extend([
+                'compare_str_gabor_noise_vs_gabor',
+                'compare_str_noise_vs_gabor',
+                'compare_str_gabor_noise_vs_noise'
+            ])
+            output_generators.extend([
+                lambda: structural_similarity(noise_with_gabor.get_next_frame(0),
+                                              patch_generator.get_normalized_patch()),
+                lambda: structural_similarity(base_noise.get_next_frame(0),
+                                              patch_generator.get_normalized_patch()),
+                lambda: structural_similarity(noise_with_gabor.get_next_frame(0),
+                                              base_noise.get_next_frame(0)),
+            ])
         elif output_value == 'ssim':
             fieldnames.extend([
                 'ssim_gabor_noise_vs_gabor',
                 'ssim_noise_vs_gabor',
+                'ssim_gabor_noise_vs_noise'
             ])
             output_generators.extend([
                 lambda: ssim(noise_with_gabor.get_next_frame(0),
-                             patch_generator.get_normalized_patch()),
+                             patch_generator.get_normalized_patch(),
+                             alpha, beta, gamma),
                 lambda: ssim(base_noise.get_next_frame(0),
-                             patch_generator.get_normalized_patch()),
+                             patch_generator.get_normalized_patch(),
+                             alpha, beta, gamma),
+                lambda: ssim(noise_with_gabor.get_next_frame(0),
+                             base_noise.get_next_frame(0),
+                             alpha, beta, gamma),
             ])
-            data_slices.append(2)
-            labels.append(base_labels[0:2])
-        elif output_value == 'full_ssim' and granularity:
-            patch_comparator = PatchComparator(size / ppd, ppd, gabor, granularity=granularity)
+        elif output_value == 'cw_ssim':
+            fieldnames.extend([
+                'cw_ssim_gabor_noise_vs_gabor',
+                'cw_ssim_noise_vs_gabor',
+                'cw_ssim_gabor_noise_vs_noise'
+            ])
+            output_generators.extend([
+                lambda: cw_ssim(noise_with_gabor.get_next_frame(0),
+                                patch_generator.get_normalized_patch(),
+                                alpha, beta, gamma),
+                lambda: cw_ssim(base_noise.get_next_frame(0),
+                                patch_generator.get_normalized_patch(),
+                                alpha, beta, gamma),
+                lambda: cw_ssim(noise_with_gabor.get_next_frame(0),
+                                base_noise.get_next_frame(0),
+                                alpha, beta, gamma),
+            ])
+        elif output_value == 'pattern_search_ssim' and granularity:
+            simple_patch_comparator = PatchComparator(size / ppd, ppd, gabor, granularity=granularity,
+                                                      alpha=alpha, beta=beta, gamma=gamma)
 
             fieldnames.extend([
-                'ssim_gabor_noise_vs_gabor',
-                'ssim_noise_vs_gabor',
-                'ssim_gabor_noise_vs_patch_search',
-                'ssim_noise_vs_patch_search',
+                'simple_ssim_gabor_noise_vs_patch_search',
+                'simple_ssim_noise_vs_patch_search',
+                'simple_ssim_gabor_noise_vs_noise',
             ])
             output_generators.extend([
+                lambda: simple_patch_comparator.get_best_ssim_match(noise_with_gabor.get_next_frame(0)),
+                lambda: simple_patch_comparator.get_best_ssim_match(base_noise.get_next_frame(0)),
                 lambda: ssim(noise_with_gabor.get_next_frame(0),
-                             patch_generator.get_normalized_patch()),
-                lambda: ssim(base_noise.get_next_frame(0),
-                             patch_generator.get_normalized_patch()),
-                lambda: patch_comparator.get_best_ssim_match(noise_with_gabor.get_next_frame(0)),
-                lambda: patch_comparator.get_best_ssim_match(base_noise.get_next_frame(0)),
+                             base_noise.get_next_frame(0),
+                             alpha, beta, gamma)
             ])
-            data_slices.append(4)
-            labels.append(base_labels[0:2] + base_labels[0:2])
+        elif output_value == 'pattern_search_cw_ssim' and granularity:
+            complex_patch_comparator = PatchComparator(size / ppd, ppd, gabor, granularity=granularity,
+                                                       alpha=alpha, beta=beta, gamma=gamma, simple=False)
+            fieldnames.extend([
+                'cw_ssim_gabor_noise_vs_patch_search',
+                'cw_ssim_noise_vs_patch_search',
+                'cw_ssim_gabor_noise_vs_noise',
+            ])
+            output_generators.extend([
+                lambda: complex_patch_comparator.get_best_ssim_match(noise_with_gabor.get_next_frame(0)),
+                lambda: complex_patch_comparator.get_best_ssim_match(base_noise.get_next_frame(0)),
+                lambda: cw_ssim(noise_with_gabor.get_next_frame(0),
+                                base_noise.get_next_frame(0),
+                                alpha, beta, gamma),
+            ])
         elif output_value == 'diff' and output_diff:
             fieldnames.extend([
                 'diff_gabor_noise_max',
                 'diff_gabor_noise_min',
                 'diff_gabor_noise_mean',
             ])
+            # noinspection PyArgumentList
             output_generators.extend([
                 lambda: diff_noise.get_next_frame(0).max(),
                 lambda: diff_noise.get_next_frame(0).min(),
                 lambda: diff_noise.get_next_frame(0).mean(),
             ])
-            data_slices.append(3)
-            labels.append(['Diff max', 'Diff min', 'Diff mean'])
         else:
             raise ValueError(f'{output_value} is not a valid output value')
 
@@ -191,19 +244,15 @@ def run_experiment(size=500, length=10, ppd=80, exp_name='test', live=True, outp
                                                   fieldnames=fieldnames, output_generators=output_generators)
 
     if live:
-        output_values = PygletOutput(noise_generator.get_next_frame, width, height)
+        output = PygletOutput(noise_generator.get_next_frame, width, height)
     else:
         secondary_outputs = [('original', noise_with_gabor.get_next_frame)] if output_diff else []
-        output_values = VideoOutput(noise_generator.get_next_frame, width, height, secondary_outputs=secondary_outputs,
-                                    FPS=50, length=length, video_name=output_name + ".avi")
+        output = VideoOutput(noise_generator.get_next_frame, width, height, secondary_outputs=secondary_outputs,
+                             FPS=fps, length=length, video_name=output_name + ".avi")
 
-    output_values.run()
-    hasattr(output_values, '__del__') and output_values.__del__()
+    output.run()
+    hasattr(output, '__del__') and output.__del__()
     noise_generator.__del__()
-
-    # GRAPHS part starts here!
-    create_graphs(len(titles), [x for x in create_slice_indices(data_slices, initial_offset=1)], labels, titles,
-                  file_name=output_name, live=live, delimiter=delimiter)
 
 
 if __name__ == '__main__':

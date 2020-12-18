@@ -22,8 +22,12 @@ def get_data(filename, delimiter=';'):
 
 
 def get_axes(plots=3):
-    fig, axes = plt.subplots(plots, sharex='all', figsize=(15, 8))
+    fig, axes = plt.subplots(plots, sharex='all', sharey='all', figsize=(15, 8))
     plt.subplots_adjust(left=0.08, right=0.8, hspace=0.4, top=0.92)
+    plt.setp(axes, yticks=np.arange(-0.2, 1.2, 0.2))
+
+    for ax in axes:
+        ax.grid(True, linestyle='-')
 
     # The xlabel must be set after creating the plt
     plt.xlabel('Time [s]')
@@ -32,7 +36,9 @@ def get_axes(plots=3):
 
 def create_graphs(axes_count: int, axes_slices: [[int]], axes_labels: [[str]], axes_titles: [str], file_name='test',
                   delimiter=';', live=False):
-    data = get_data(file_name + '.csv', delimiter)
+    data_file = file_name if file_name.endswith('.csv') else file_name + '.csv'
+    output_file = file_name[:-4] if file_name.endswith('.csv') else file_name
+    data = get_data(data_file, delimiter)
 
     fig, all_axes = get_axes(axes_count)
 
@@ -42,7 +48,7 @@ def create_graphs(axes_count: int, axes_slices: [[int]], axes_labels: [[str]], a
     if live:
         plt.show()
     else:
-        plt.savefig(file_name + '.pdf')
-        plt.savefig(file_name + '.png')
+        plt.savefig(output_file + '.pdf')
+        plt.savefig(output_file + '.png')
 
     plt.close(fig)

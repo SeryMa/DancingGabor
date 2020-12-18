@@ -19,27 +19,28 @@ class GaborGenerator(NoiseGenerator):
 
     Parameters
     ----------
-    patch_size_deg : int, optional
+    patch_size_deg : float
         Patch size in degrees.
 
     ppd : int, optional
-        Pixels per one degree.
+        Pixels per one degree. Defaults to 60.
 
     update_list : Iterable[Tuple[str, Callable[[float], AttributeValue]]], optional
         List of update pairs. First in pair is name of updated parameter. Second in pair the function itself.
         The function accepts only one float parameter denoting time that has passed from last update.
 
-        Setting any value to be updated overrides their initial values. The initial value is then set to `update_function(0)
+        Setting any value to be updated overrides their initial values.
+        The initial value is then set to `update_function(0)`
         Attributes to update are `freq`, `theta` and or `phase`.
 
     freq : int, optional
-        Frequency of generated gabor patch.
+        Frequency of generated gabor patch. Defaults to 6.
 
     theta: int, optional
-        Rotation of the patch in degrees.
+        Rotation of the patch in degrees. Defaults to 45.
 
     phase: double, optional
-        Phase shift of the gabor patch in radians.
+        Phase shift of the gabor patch in radians. Defaults to 0.25.
 
     Attributes
     ----------
@@ -65,13 +66,14 @@ class GaborGenerator(NoiseGenerator):
         Returns circular gauss cutout.
     """
     TRIM = 0.005
-    SIGMA = 0.32
+    SIGMA = 0.22
+    TWO_PI = 2 * np.pi
 
     AttributeValue = TypeVar('AttributeValue')
 
-    def __init__(self, patch_size_deg=2, ppd=60,
+    def __init__(self, patch_size_deg, ppd=60,
                  update_list: Iterable[Tuple[str, Callable[[float], AttributeValue]]] = None,
-                 freq=6, theta=45, phase=0.25, **kwargs):
+                 freq=6, theta=45, phase=0.25):
         patch_size_px = int(patch_size_deg * ppd)
         super(GaborGenerator, self).__init__(width=patch_size_px, height=patch_size_px)
 
@@ -92,6 +94,7 @@ class GaborGenerator(NoiseGenerator):
         self.__after_init()
 
         # TODO: try to think about a different approach to double initialized values
+        # Instead of update functions there could be initializer of updater classes passed
         self.__update__(0)
 
     # Defined just for performance and type convenience reasons
@@ -124,20 +127,21 @@ class GaborGenerator(NoiseGenerator):
             self.__should_update_patch = False
 
     def get_grating(self) -> np.ndarray:
-        phase_rad = (self.phase * 2 * np.pi)
-        theta_rad = (self.theta / 360) * 2 * np.pi
+        theta_rad = (self.theta / 360) * self.TWO_PI
+        freq_rad = self.freq * self.TWO_PI
+        phase_rad = self.phase * self.TWO_PI
 
-        [meshw, meshh] = self.mesh
-        x_t = meshw * np.cos(theta_rad)
-        y_t = meshh * np.sin(theta_rad)
+        [mesh_w, mesh_h] = self.mesh
+        x_t = mesh_w * np.cos(theta_rad)
+        y_t = mesh_h * np.sin(theta_rad)
 
         xyt = x_t + y_t
-        xyf = xyt * self.freq * 2 * np.pi
-        return np.sin((xyf + phase_rad))
+        xyf = xyt * freq_rad
+        return np.sin(xyf + phase_rad)
 
     def get_gauss_cutout(self) -> np.ndarray:
-        [meshw, meshh] = self.mesh
-        gauss = np.exp(-(((meshw ** 2) + (meshh ** 2)) / (self.SIGMA ** 2)))
+        [mesh_w, mesh_h] = self.mesh
+        gauss = np.exp(-(((mesh_w ** 2) + (mesh_h ** 2)) / (self.SIGMA ** 2)))
 
         return np.clip(gauss, self.TRIM, gauss.max()) - self.TRIM
 

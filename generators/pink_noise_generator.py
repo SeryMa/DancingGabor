@@ -17,12 +17,9 @@ class PinkNoise(StaticNoiseGenerator):
     height : int
         Height of the generated noise
 
-    degrees: float
-        ?????
-
     """
 
-    def __init__(self, width, height, degrees=4):
+    def __init__(self, width, height):
         self.whiteNoise = WhiteNoise(width, height)
         super(PinkNoise, self).__init__(width, height)
 

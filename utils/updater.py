@@ -71,6 +71,21 @@ class CircularUpdater(SinUpdater):
         super(CircularUpdater, self).__init__(center - distance, center + distance, period, initial_time, center)
 
 
+class FlyUpdater(Updater):
+    def __init__(self, time_step=1, initial_value=0, randomness=0.1):
+        self.time_step = time_step
+        self.direction = 1
+        self.randomness = randomness
+        super(FlyUpdater, self).__init__(0, initial_value)
+
+    def __update_value__(self, dt=1):
+        # move in a direction and from time to time change it abruptly
+        if np.random.random() > self.randomness:
+            self.direction *= -1
+
+        self.value += dt * self.direction * self.time_step
+
+
 # TODO: create an updater that takes as an input two updaters and creates the output as a composite
 # Will it even be possible? It could possibly only utilize the `__update_value__` functions of those,
 # but those expect to know the value before the change - so it's not very easy to do the composition
