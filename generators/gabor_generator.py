@@ -66,7 +66,7 @@ class GaborGenerator(NoiseGenerator):
         Returns circular gauss cutout.
     """
     TRIM = 0.005
-    SIGMA = 0.22
+    SIGMA = - np.pi / (8 ** 2)
     TWO_PI = 2 * np.pi
 
     AttributeValue = TypeVar('AttributeValue')
@@ -91,15 +91,9 @@ class GaborGenerator(NoiseGenerator):
         self.__should_update_patch = True
         self.__normalized_patch = None
 
-        self.__after_init()
-
         # TODO: try to think about a different approach to double initialized values
         # Instead of update functions there could be initializer of updater classes passed
         self.__update__(0)
-
-    # Defined just for performance and type convenience reasons
-    def __after_init(self) -> None:
-        pass
 
     def get_normalized_patch(self) -> np.ndarray:
         # if self.__should_update_patch:
@@ -141,7 +135,7 @@ class GaborGenerator(NoiseGenerator):
 
     def get_gauss_cutout(self) -> np.ndarray:
         [mesh_w, mesh_h] = self.mesh
-        gauss = np.exp(-(((mesh_w ** 2) + (mesh_h ** 2)) / (self.SIGMA ** 2)))
+        gauss = np.exp(((mesh_w ** 2) + (mesh_h ** 2)) / self.SIGMA)
 
         return np.clip(gauss, self.TRIM, gauss.max()) - self.TRIM
 
@@ -152,9 +146,12 @@ class PlaidGenerator(GaborGenerator):
       The patch can change in time if specified during class initialization.
     """
 
-    def __after_init(self) -> None:
-        # We are going to add two gratings so we actually need to divide it by two in the final gabor
+    def __init__(self, **kwargs):
+        super(PlaidGenerator, self).__init__(**kwargs)
+
         self.gauss /= 2
+        # We need to recompute the patches once again because we changed the gauss cutout
+        self.__update__(0)
 
     def __update__(self, dt=1) -> None:
         self.__update_values__(dt)

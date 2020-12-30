@@ -2,8 +2,7 @@ import argparse
 
 import numpy as np
 
-from experiments.base_experiment_settings import *
-from experiments.run_single_experiment import get_patch_value_updates, get_position_updater
+from base_experiment_settings import *
 from generators.continuous_noise_generator import ContinuousNoiseGenerator
 from generators.gabor_generator import GaborGenerator
 from generators.patched_noise_generator import PatchedNoiseGenerator
@@ -56,10 +55,15 @@ def run_experiment(exp_name,
     width = height = scene_size
 
     base_noise = ContinuousNoiseGenerator(width, height, PinkNoise(width, height), period=period)
+    update_list = [] if theta_speed is None else [
+        *get_patch_value_updates('theta', theta_speed),
+        *get_patch_value_updates('phase', phase_speed),
+        *get_patch_value_updates('freq', freq_speed, initial_value=6),
+    ]
     patch_generator = GaborGenerator(
         patch_size_deg=patch_size_deg,
         ppd=ppd,
-        update_list=get_patch_value_updates(theta_speed, phase_speed, freq_speed))
+        update_list=update_list)
     noise_with_gabor = PatchedNoiseGenerator(width, height, base_noise,
                                              [(patch_generator, get_position_updater(patch_position=patch_position))],
                                              contrast=contrast)
@@ -73,7 +77,7 @@ def run_experiment(exp_name,
             def get_ssim(window):
                 return ssim(window, patch_generator.get_normalized_patch(), alpha=0, beta=-0.5, gamma=0.5)
         else:
-            patch_comparator = PatchComparator(patch_size_deg, ppd, detect_gabor=True, granularity=granularity)
+            patch_comparator = PatchComparator(patch_size_deg, ppd, detect_gabor=True, granularity=granularities)
 
             def get_ssim(window):
                 return patch_comparator.get_best_ssim_match(window)
@@ -148,13 +152,16 @@ def run_experiment(exp_name,
 
 
 if __name__ == '__main__':
-    # run_experiment(**get_command_line_args())
-
-    ch_dir()
-
-    # for exp in ['avg_diff', 'static_gabor_avg_diff']:
-    # for exp in ['static_gabor', 'avg_diff', 'pure_diff', 'static_gabor_avg_diff', 'threshold', 'ref_ssim', 'ssim']:
-    for exp in ['true_ssim']:
+    for exp in [
+        'static_gabor',
+        'avg_diff',
+        'pure_diff',
+        'static_gabor_avg_diff',
+        'threshold',
+        'ref_ssim',
+        'ssim',
+        'true_ssim'
+    ]:
         ch_dir(f'gabor_localization_{exp}')
 
         if 'static_gabor' in exp:

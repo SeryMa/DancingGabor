@@ -1,9 +1,6 @@
 import argparse
 
-from numpy import pi
-
-from experiments.base_experiment_settings import *
-from experiments.run_single_experiment import get_position_updater
+from base_experiment_settings import *
 from generators.continuous_noise_generator import ContinuousNoiseGenerator
 from generators.gabor_generator import GaborGenerator
 from generators.patched_noise_generator import PatchedNoiseGenerator
@@ -34,7 +31,7 @@ period = 2
 
 ppd = 50
 patch_size_deg = 10
-contrast = 1
+contrast = 0.5
 patch_shift = (0, 0)
 
 if __name__ == '__main__':
@@ -47,7 +44,7 @@ if __name__ == '__main__':
     patch_generator = GaborGenerator(
         patch_size_deg=patch_size_deg,
         ppd=ppd,
-        phase=pi
+        # phase=pi
         # update_list=get_patch_value_updates(args['theta_speed'], args['phase_speed'], args['freq_speed']))
         # update_list = get_patch_value_updates(0, 1, 0)
     )
@@ -59,12 +56,13 @@ if __name__ == '__main__':
     # diff_noise = DifferenceNoiseGenerator(noise_with_gabor, period)
     # diff_noise = AvgDifferenceNoiseGenerator(noise_with_gabor, period)
 
-    # noise_generator = noise_with_gabor
+    noise_generator = noise_with_gabor
     # noise_generator = diff_noise
-    noise_generator = base_noise
+    # noise_generator = base_noise
     # noise_generator = patch_generator
 
-    output = ImageOutput(noise_generator.get_next_frame, file_name='color_test', fps=10, length=2 * period, black='red',
-                         white='red', mid='green')
-    # output = ImageOutput(noise_generator.get_next_frame, file_name='gabor_test', fps=1, length=1)
+    # output = ImageOutput(noise_generator.get_next_frame, file_name='simple_scene', fps=10, length=2 * period, black='red',
+    #                      white='red', mid='green')
+    output = ImageOutput(noise_generator.get_next_frame, secondary_outputs=[('s', base_noise.get_next_frame)],
+                         file_name='simple_scene', fps=1, length=1)
     output.run()

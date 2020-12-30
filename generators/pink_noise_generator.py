@@ -30,10 +30,17 @@ class PinkNoise(StaticNoiseGenerator):
         # h = h / degrees
 
         [mesh_w, mesh_h] = np.meshgrid(h, w)
-        self.browner = 1 / np.sqrt(mesh_w ** 2 + mesh_h ** 2)
-        inf_browner = np.isposinf(self.browner)
-        self.browner[inf_browner] = self.browner[~inf_browner].max()
-        # self.browner[np.isinf(self.browner)] = 0
+        omega = np.sqrt(mesh_w ** 2 + mesh_h ** 2)
+
+        # This part deals with zero frequencies. There is only one present
+        # and is replaced with next closest value
+        zero_freq = omega == 0
+        omega[zero_freq] = omega[~zero_freq].min()
+
+        self.browner = 1 / omega
+
+        # inf_browner = np.isposinf(self.browner)
+        # self.browner[inf_browner] = self.browner[~inf_browner].max()
 
     def get_next_frame(self) -> np.ndarray:
         base_noise = self.whiteNoise.get_next_frame()

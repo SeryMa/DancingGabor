@@ -3,12 +3,11 @@ import argparse
 from numpy import pi
 
 from base_experiment_settings import *
-from generators.continuous_noise_generator import ContinuousNoiseGenerator
 from generators.gabor_generator import GaborGenerator
 from generators.patched_noise_generator import PatchedNoiseGenerator
-from generators.pink_noise_generator import PinkNoise
+from generators.proper_pink_noise_generator import PinkNoise as DynamicPinkNoise
 from noise_processing import AvgDifferenceNoiseGenerator
-from outputs.pyglet_app import PygletOutput
+from outputs.video_output import VideoOutput
 
 base_size = 500
 
@@ -30,7 +29,7 @@ def get_command_line_args():
     return parser.parse_args().__dict__
 
 
-period = 1
+period = 5
 
 ppd = 30
 patch_size_deg = 2
@@ -42,8 +41,12 @@ if __name__ == '__main__':
     width = height = args['size']
     patch_position = args['patch_position']
 
-    base_noise = ContinuousNoiseGenerator(width, height, PinkNoise(width, height), period=period)
-    # base_noise = PinkNoise2(width, height)
+    fps = 30
+    length = 10
+    deg = 1 / 100
+
+    # base_noise = ContinuousNoiseGenerator(width, height, PinkNoise(width, height), period=period)
+    base_noise = DynamicPinkNoise(width, height, length=length, fps=fps, deg=deg)
     # base_noise = RunningPinkNoise(width, height, period * 20)
     patch_generator = GaborGenerator(
         patch_size_deg=patch_size_deg,
@@ -65,6 +68,5 @@ if __name__ == '__main__':
     # noise_generator = diff_noise
     noise_generator = base_noise
 
-    output = PygletOutput(noise_generator.get_next_frame, width, height)
-    # output = PygletOutput(f, width, height)
+    output = VideoOutput(noise_generator.get_next_frame, width, height, length=length, video_name=f'test3_d{deg}.avi')
     output.run()

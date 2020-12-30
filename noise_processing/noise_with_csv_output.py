@@ -7,7 +7,7 @@ from utils.simple_functions import construct_file_name
 
 class NoiseGeneratorWithCSVOutput(NoiseProcessor):
     def __init__(self, generator: NoiseGenerator, file_name=None, delimiter=';', output_generators=None,
-                 fieldnames=None):
+                 field_names=None):
         super(NoiseGeneratorWithCSVOutput, self).__init__(generator)
 
         self.output_values = output_generators or []
@@ -18,7 +18,7 @@ class NoiseGeneratorWithCSVOutput(NoiseProcessor):
 
         self.output_file_writer = csv.writer(self.output_file, delimiter=delimiter)
 
-        self.output_file_writer.writerow(['time'] + fieldnames or [])
+        self.output_file_writer.writerow(['time'] + field_names or [])
 
         self.time = 0
 

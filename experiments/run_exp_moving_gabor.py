@@ -1,7 +1,6 @@
-from experiments.base_experiment_settings import *
+from base_experiment_settings import *
 from experiments.run_single_experiment import run_experiment
 
-ch_dir()
 ch_dir('moving_gabor')
 
 for patch_update in patch_updates:

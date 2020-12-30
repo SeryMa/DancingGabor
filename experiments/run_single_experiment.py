@@ -4,11 +4,14 @@ from generators.continuous_noise_generator import ContinuousNoiseGenerator
 from generators.gabor_generator import GaborGenerator, PlaidGenerator
 from generators.patched_noise_generator import PatchedNoiseGenerator
 from generators.pink_noise_generator import PinkNoise
+from generators.proper_pink_noise_generator import PinkNoise as PinkNoise2
+from generators.running_pink_noise_generator import RunningPinkNoise
 from noise_processing.diff_noise_generator import DifferenceNoiseGenerator
 from noise_processing.noise_with_csv_output import NoiseGeneratorWithCSVOutput
 from outputs.pyglet_app import PygletOutput
 from outputs.video_output import VideoOutput
-from utils.image import cw_ssim, ssim, luminance_comparison, contrast_comparison, structural_similarity
+from utils.image import cw_ssim, ssim, luminance_comparison, contrast_comparison, structural_similarity, \
+    phase_invariant_similarity
 from utils.patch_compare import PatchComparator
 from utils.simple_functions import construct_file_name
 from utils.updater import LinUpdater
@@ -74,7 +77,13 @@ def run_experiment(size=500, length=10, ppd=60, fps=30, exp_name='test', live=Tr
                    granularity=0):
     width = height = size
 
-    base_noise = ContinuousNoiseGenerator(width, height, PinkNoise(width, height), period=period)
+    if 'run' in exp_name:
+        base_noise = RunningPinkNoise(width, height, period=period * length)
+    elif 'v2' in exp_name:
+        base_noise = PinkNoise2(width, height, length=length, deg=1 / 100)
+    else:
+        base_noise = ContinuousNoiseGenerator(width, height, PinkNoise(width, height), period=period)
+
     patch_constructor = get_patch_generator(gabor)
     patch_generator = patch_constructor(patch_size_deg=size / ppd,
                                         ppd=ppd,
@@ -159,6 +168,20 @@ def run_experiment(size=500, length=10, ppd=60, fps=30, exp_name='test', live=Tr
                 lambda: structural_similarity(noise_with_gabor.get_next_frame(0),
                                               base_noise.get_next_frame(0)),
             ])
+        elif output_value == 'cw_structure':
+            fieldnames.extend([
+                'compare_cw_str_gabor_noise_vs_gabor',
+                'compare_cw_str_noise_vs_gabor',
+                'compare_cw_str_gabor_noise_vs_noise'
+            ])
+            output_generators.extend([
+                lambda: phase_invariant_similarity(noise_with_gabor.get_next_frame(0),
+                                                   patch_generator.get_normalized_patch()),
+                lambda: phase_invariant_similarity(base_noise.get_next_frame(0),
+                                                   patch_generator.get_normalized_patch()),
+                lambda: phase_invariant_similarity(noise_with_gabor.get_next_frame(0),
+                                                   base_noise.get_next_frame(0)),
+            ])
         elif output_value == 'ssim':
             fieldnames.extend([
                 'ssim_gabor_noise_vs_gabor',
@@ -241,7 +264,7 @@ def run_experiment(size=500, length=10, ppd=60, fps=30, exp_name='test', live=Tr
 
     noise_generator = NoiseGeneratorWithCSVOutput(generator=diff_noise or noise_with_gabor,
                                                   file_name=output_name + ".csv",
-                                                  fieldnames=fieldnames, output_generators=output_generators)
+                                                  field_names=fieldnames, output_generators=output_generators)
 
     if live:
         output = PygletOutput(noise_generator.get_next_frame, width, height)

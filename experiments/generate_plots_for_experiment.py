@@ -21,7 +21,7 @@ def get_command_line_args():
 
 def generate_graphs(folder='.', output_values: [str] = None, live=True, delimiter=';'):
     output_values = [] if output_values is None else output_values
-    fieldnames = []
+
     data_slices = []
     base_labels = ['Gabor noise vs Gabor', 'Noise vs Gabor', 'Gabor noise vs Noise']
     labels = []
@@ -35,57 +35,6 @@ def generate_graphs(folder='.', output_values: [str] = None, live=True, delimite
             labels.append(['Diff max', 'Diff min', 'Diff mean'])
         else:
             labels.append(base_labels)
-
-        if output_value == 'luminance':
-            fieldnames.extend([
-                'compare_lum_gabor_noise_vs_gabor',
-                'compare_lum_noise_vs_gabor',
-                'compare_lum_gabor_noise_vs_noise'
-            ])
-        elif output_value == 'contrast':
-            fieldnames.extend([
-                'compare_con_gabor_noise_vs_gabor',
-                'compare_con_noise_vs_gabor',
-                'compare_con_gabor_noise_vs_noise'
-            ])
-        elif output_value == 'structure':
-            fieldnames.extend([
-                'compare_str_gabor_noise_vs_gabor',
-                'compare_str_noise_vs_gabor',
-                'compare_str_gabor_noise_vs_noise'
-            ])
-        elif output_value == 'ssim':
-            fieldnames.extend([
-                'ssim_gabor_noise_vs_gabor',
-                'ssim_noise_vs_gabor',
-                'ssim_gabor_noise_vs_noise'
-            ])
-        elif output_value == 'cw_ssim':
-            fieldnames.extend([
-                'cw_ssim_gabor_noise_vs_gabor',
-                'cw_ssim_noise_vs_gabor',
-                'cw_ssim_gabor_noise_vs_noise'
-            ])
-        elif output_value == 'pattern_search_ssim':
-            fieldnames.extend([
-                'simple_ssim_gabor_noise_vs_patch_search',
-                'simple_ssim_noise_vs_patch_search',
-                'simple_ssim_gabor_noise_vs_noise',
-            ])
-        elif output_value == 'pattern_search_cw_ssim':
-            fieldnames.extend([
-                'cw_ssim_gabor_noise_vs_patch_search',
-                'cw_ssim_noise_vs_patch_search',
-                'cw_ssim_gabor_noise_vs_noise',
-            ])
-        elif output_value == 'diff':
-            fieldnames.extend([
-                'diff_gabor_noise_max',
-                'diff_gabor_noise_min',
-                'diff_gabor_noise_mean',
-            ])
-        else:
-            raise ValueError(f'{output_value} is not a valid output value')
 
     for csv_file in [csv_file for csv_file in listdir(folder) if csv_file.endswith('.csv')]:
         create_graphs(len(titles),

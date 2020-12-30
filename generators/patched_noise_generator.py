@@ -69,7 +69,7 @@ class PatchedNoiseGenerator(NoiseGenerator):
             # apply_patch(background_noise, patch, x, y, overwrite=True)
             apply_patch(background_noise, patch, x, y, contrast=self.contrast)
 
-        # We do not want to call normalize,
+        # We do not want to normalize,
         # because that could alter values that shouldn't be affected by the patch (eg edges)
         # So instead we just clip values that are way too high or low.
         self.frame = np.clip(background_noise, 0, 1)
