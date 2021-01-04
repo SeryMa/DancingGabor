@@ -8,7 +8,8 @@ from utils.image import cw_ssim, ssim
 from utils.patch_compare import PatchComparator
 from utils.simple_functions import construct_file_name
 
-if __name__ == '__main__':
+
+def main():
     ch_dir('4_moving_gabor_adv_detection')
 
     for x_position_update, patch_shift_x in position_updates.items():
@@ -112,3 +113,7 @@ if __name__ == '__main__':
                                        outputs=output_generators)
 
         experiment_end()
+
+
+if __name__ == '__main__':
+    main()

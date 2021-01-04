@@ -7,7 +7,8 @@ from generators.pink_noise_generator import PinkNoise
 from utils.image import cw_ssim, ssim
 from utils.simple_functions import construct_file_name
 
-if __name__ == '__main__':
+
+def main():
     ch_dir('2_ssim_precision')
 
     for x_position_update, patch_shift_x in position_updates.items():
@@ -80,3 +81,7 @@ if __name__ == '__main__':
                                        generator=noise_with_gabor,
                                        fields=field_names,
                                        outputs=output_generators)
+
+
+if __name__ == '__main__':
+    main()

@@ -16,7 +16,13 @@ class NoiseGeneratorWithCSVOutput(NoiseProcessor):
         # see: https://docs.python.org/3/library/csv.html#id3
         self.output_file = open(file_name or construct_file_name(file_name, extension='csv'), mode='w', newline='')
 
-        self.output_file_writer = csv.writer(self.output_file, delimiter=delimiter)
+        self.output_file_writer = csv.writer(self.output_file,
+                                             delimiter=delimiter,
+                                             # We do not expect to write down many strings
+                                             # so there is no need to escape anything
+                                             # but using this trick we can record
+                                             # several values from one output function
+                                             escapechar=' ', quoting=csv.QUOTE_NONE)
 
         self.output_file_writer.writerow(['time'] + field_names or [])
 

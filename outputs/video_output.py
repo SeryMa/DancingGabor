@@ -26,13 +26,16 @@ class VideoOutput(Output):
             )
 
     def run(self):
-        for _ in range(self.FPS * self.length):
+        for i in range(self.FPS * self.length):
             frame = cast_to_uint8(self.get_next_frame(dt=1 / self.FPS))
             self.video.write(frame)
 
             for secondary_output_generator, secondary_output_writer in self.secondary_outputs:
                 secondary_frame = cast_to_uint8(secondary_output_generator(0))
                 secondary_output_writer.write(secondary_frame)
+
+            if i % self.FPS == 0:
+                print(f'{i // self.FPS}s out of {self.length}')
 
     def __del__(self):
         self.video.release()

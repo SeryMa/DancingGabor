@@ -3,11 +3,11 @@ from typing import Callable
 import numpy as np
 
 from generators.noise_generator import NoiseGenerator
-from noise_processing.noise_processor import NoiseProcessor
+from noise_processing.noise_processor import PersistentNoiseProcessor
 from utils.simple_functions import simple_difference
 
 
-class PureDifferenceNoiseGenerator(NoiseProcessor):
+class PureDifferenceNoiseGenerator(PersistentNoiseProcessor):
     def __init__(self, generator: NoiseGenerator,
                  diff_function: Callable[[np.ndarray, np.ndarray], np.ndarray] = simple_difference):
         super(PureDifferenceNoiseGenerator, self).__init__(generator)
@@ -16,7 +16,7 @@ class PureDifferenceNoiseGenerator(NoiseProcessor):
         self.last_frame_noise = self.noise_generator.get_next_frame(0)
 
     def __update__(self, dt=1) -> None:
-        self.new_frame_noise = self.noise_generator.get_next_frame(dt)
+        self.new_frame_noise = self.noise_generator.get_next_frame(0)
 
         self.__process__(dt)
 

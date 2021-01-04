@@ -13,6 +13,7 @@ def ch_dir(folder):
 
 
 def experiment_end():
+    print('Experiment ended!')
     winsound.Beep(370, 500)
     winsound.Beep(370, 500)
 
@@ -43,6 +44,8 @@ def generate_experiment_output(output_name, generator, fields, outputs):
     hasattr(output, '__del__') and output.__del__()
     noise_generator.__del__()
 
+
+results_folder = 'results'
 
 base_size = 200
 length = 10

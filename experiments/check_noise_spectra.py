@@ -2,13 +2,13 @@ from enum import Enum
 
 from numpy import fft, real, imag, sqrt
 
-from base_experiment_settings import *
 from generators.continuous_noise_generator import ContinuousNoiseGenerator
 from generators.pink_noise_generator import PinkNoise
 from generators.proper_pink_noise_generator import PinkNoise as PinkNoise2
 from generators.running_pink_noise_generator import RunningPinkNoise
 from generators.white_noise_generator import WhiteNoise
 from utils.array import get_normalized
+from utils.base_experiment_settings import *
 
 
 class Noises(Enum):
@@ -24,9 +24,8 @@ if __name__ == '__main__':
     # noise_type = parser.parse_args().noise
 
     ch_dir('spectra')
-
-    # for noise_type in (noise.value for noise in Noises):
-    for noise_type in [Noises.Run.value]:
+    # for noise_type in [Noises.Run.value]:
+    for noise_type in (noise.value for noise in Noises):
         if noise_type == Noises.Inter.value:
             noise = ContinuousNoiseGenerator(base_size, base_size, PinkNoise(base_size, base_size), period=base_period)
         elif noise_type == Noises.Pink.value:
@@ -49,7 +48,7 @@ if __name__ == '__main__':
             # spectra = real(f_frame)
             # spectra = imag(f_frame)
             out = get_normalized(spectra)
-            return 1 - out
+            return out
 
 
         # output = PygletOutput(get_spectra, base_size, base_size)

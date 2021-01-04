@@ -1,3 +1,4 @@
+import cv2
 from cv2 import VideoCapture, waitKey, CAP_PROP_FRAME_WIDTH, CAP_PROP_FRAME_HEIGHT
 from numpy import ndarray
 
@@ -15,17 +16,22 @@ class VideoParsingGenerator(NoiseGenerator):
         Name of the video file.
     """
 
-    def __init__(self, file_name):
+    def __init__(self, file_name, live=True, fps=30):
         self.capture = VideoCapture(file_name)
 
         width = int(self.capture.get(CAP_PROP_FRAME_WIDTH))
         height = int(self.capture.get(CAP_PROP_FRAME_HEIGHT))
 
+        self.live = live
+
+        self.capture.set(cv2.CAP_PROP_FPS, fps)
+
         super(VideoParsingGenerator, self).__init__(width, height)
         waitKey(0)
 
     def get_next_frame(self, dt=1) -> ndarray:
-        waitKey(int(dt * 1000))
+        if self.live:
+            waitKey(int(dt * 1000))
         if not self.capture.isOpened():
             raise ValueError
 

@@ -151,7 +151,7 @@ def run_experiment(exp_name,
     video_output.__del__()
 
 
-if __name__ == '__main__':
+def main():
     for exp in [
         'static_gabor',
         'avg_diff',
@@ -177,4 +177,8 @@ if __name__ == '__main__':
 
         ch_dir('..')
 
-    # experiment_end()
+    experiment_end()
+
+
+if __name__ == '__main__':
+    main()

@@ -8,7 +8,8 @@ from utils.image import cw_ssim, ssim
 from utils.patch_compare import PatchComparator
 from utils.simple_functions import construct_file_name
 
-if __name__ == '__main__':
+
+def main():
     ch_dir('3_changing_gabor_adv_detection')
 
     for update_type, update_options in patch_updates.items():
@@ -114,3 +115,7 @@ if __name__ == '__main__':
                                        generator=noise_with_gabor,
                                        fields=field_names,
                                        outputs=output_generators)
+
+
+if __name__ == '__main__':
+    main()

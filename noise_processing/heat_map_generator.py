@@ -3,11 +3,11 @@ from math import ceil
 import numpy as np
 
 from generators.noise_generator import NoiseGenerator
-from noise_processing.noise_processor import NoiseProcessor
+from noise_processing.noise_processor import PersistentNoiseProcessor
 from utils.array import get_windows_indices
 
 
-class HeatMapGenerator(NoiseProcessor):
+class HeatMapGenerator(PersistentNoiseProcessor):
     def __init__(self, generator: NoiseGenerator, process_function, window_size: int = 10, step: int = None,
                  aggregate_function=None, compute_cached_values=None):
         super(HeatMapGenerator, self).__init__(generator)

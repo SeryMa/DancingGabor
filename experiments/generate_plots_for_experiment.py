@@ -22,19 +22,9 @@ def get_command_line_args():
 def generate_graphs(folder='.', output_values: [str] = None, live=True, delimiter=';'):
     output_values = [] if output_values is None else output_values
 
-    data_slices = []
-    base_labels = ['Gabor noise vs Gabor', 'Noise vs Gabor', 'Gabor noise vs Noise']
-    labels = []
-    titles = []
-    for output_value in output_values:
-        titles.append(f'{output_value} values')
-        output_value = output_value.lower()
-
-        data_slices.append(3)
-        if output_value == 'diff':
-            labels.append(['Diff max', 'Diff min', 'Diff mean'])
-        else:
-            labels.append(base_labels)
+    data_slices = [3 for _ in output_values]
+    labels = ['Gabor noise vs Gabor', 'Noise vs Gabor', 'Gabor noise vs Noise']
+    titles = [f'{output_value} values' for output_value in output_values]
 
     for csv_file in [csv_file for csv_file in listdir(folder) if csv_file.endswith('.csv')]:
         create_graphs(len(titles),

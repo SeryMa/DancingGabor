@@ -7,7 +7,8 @@ from generators.pink_noise_generator import PinkNoise
 from utils.image import luminance_comparison, contrast_comparison, structural_similarity, phase_invariant_similarity
 from utils.simple_functions import construct_file_name
 
-if __name__ == '__main__':
+
+def main():
     ch_dir('1_simple_poc')
 
     for contrast_setting, contrast in contrast_settings.items():
@@ -100,3 +101,7 @@ if __name__ == '__main__':
                                        generator=noise_with_gabor,
                                        fields=field_names,
                                        outputs=output_generators)
+
+
+if __name__ == '__main__':
+    main()

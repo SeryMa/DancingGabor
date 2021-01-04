@@ -107,8 +107,8 @@ def value_fill(array, x, y, desired_shape, value=1):
 
 
 def get_windows_indices(array_shape, window_size_height=1, window_size_width=1, step=1):
-    for x in range(-window_size_height + step, array_shape[0], step):
-        for y in range(-window_size_width + step, array_shape[1], step):
+    for x in range(-step, array_shape[0], step):
+        for y in range(-step, array_shape[1], step):
             yield max(0, x), x + window_size_height, max(0, y), y + window_size_width
 
 
