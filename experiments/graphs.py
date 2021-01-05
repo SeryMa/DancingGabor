@@ -44,7 +44,8 @@ def create_graphs(axes_count: int, axes_slices: [[int]], axes_labels: [str], axe
     for ax, data_slice, title in zip(all_axes, axes_slices, axes_titles):
         plot(ax, data[0], data[data_slice], title=title)
 
-    fig.legend(axes_labels, loc='center', fancybox=True, shadow=True, bbox_to_anchor=(.512, 0.07), borderaxespad=0.)
+    fig.legend(axes_labels, loc='center', ncol=3, fancybox=True, shadow=True, bbox_to_anchor=(.512, 0.07),
+               borderaxespad=0.)
 
     if live:
         plt.show()
@@ -70,7 +71,7 @@ def plot_main(file_name, titles, line_labels, delimiter=';', live=False):
                 [len(line_labels) for _ in axes_titles], initial_offset=1)]):
             plot(ax, data[0], data[data_slice], title=ax_title)
 
-        fig.legend(line_labels, loc='center', ncol=3, fancybox=True, shadow=True, bbox_to_anchor=(.512, 0.07),
+        fig.legend(line_labels, loc='center', ncol=3, fancybox=True, shadow=True, bbox_to_anchor=(.512, 0.05),
                    borderaxespad=0.)
 
         if live:
